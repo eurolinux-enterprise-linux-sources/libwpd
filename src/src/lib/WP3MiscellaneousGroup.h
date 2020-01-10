@@ -34,15 +34,15 @@
 class WP3MiscellaneousGroup : public WP3VariableLengthGroup
 {
 public:
-	WP3MiscellaneousGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	WP3MiscellaneousGroup(WPXInputStream *input, WPXEncryption *encryption);
 	~WP3MiscellaneousGroup();
-	void _readContents(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	void _readContents(WPXInputStream *input, WPXEncryption *encryption);
 	void parse(WP3Listener *listener);
 
 private:
 	// variables needed for subgroup 4 (Page Size Override)
-	unsigned short m_pageWidth;
-	unsigned short m_pageHeight;
+	uint16_t m_pageWidth;
+	uint16_t m_pageHeight;
 	WPXFormOrientation m_pageOrientation;
 };
 

@@ -27,7 +27,7 @@
 #include "WP3Listener.h"
 #include "libwpd_internal.h"
 
-WP3EndOfLinePageGroup::WP3EndOfLinePageGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption) :
+WP3EndOfLinePageGroup::WP3EndOfLinePageGroup(WPXInputStream *input, WPXEncryption *encryption) :
 	WP3VariableLengthGroup()
 {
 	_read(input, encryption);
@@ -42,13 +42,13 @@ void WP3EndOfLinePageGroup::parse(WP3Listener *listener)
 	// good reason.
 
 	// TODO: handle the values > 0x02
-	switch (getSubGroup())
+	switch(getSubGroup())
 	{
 	case 0x00: // Soft End of Line
-		listener->insertCharacter((unsigned) ' ');
+		listener->insertCharacter((uint32_t) ' ');
 		break;
 	case 0x01: // Soft End of Page/Column
-		listener->insertCharacter((unsigned) ' ');
+		listener->insertCharacter((uint32_t) ' ');
 		break;
 	case 0x02: // Hard End of Line
 		listener->insertEOL();
@@ -84,17 +84,17 @@ void WP3EndOfLinePageGroup::parse(WP3Listener *listener)
 		listener->insertBreak(WPX_SOFT_PAGE_BREAK);
 		break;
 	case 0x0C: // Hard Hyphen at End of Line
-		listener->insertCharacter((unsigned) '-');
+		listener->insertCharacter((uint32_t) '-');
 		break;
 	case 0x0D: // Hard Hyphen at End of Page/Column
-		listener->insertCharacter((unsigned) '-');
+		listener->insertCharacter((uint32_t) '-');
 		listener->insertBreak(WPX_SOFT_PAGE_BREAK);
 		break;
 	case 0x0E: // Soft Hyphen at End of Line
-		listener->insertCharacter((unsigned) 0xad);
+		listener->insertCharacter((uint32_t) 0xad);
 		break;
 	case 0x0F: // Soft Hyphen at End of Page/Column
-		listener->insertCharacter((unsigned) 0xad);
+		listener->insertCharacter((uint32_t) 0xad);
 		break;
 	case 0x10: // Auto Hyphen at End of Line
 		break;

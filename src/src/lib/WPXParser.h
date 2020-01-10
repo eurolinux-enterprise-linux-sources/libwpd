@@ -27,25 +27,26 @@
 #ifndef WPXPARSER_H
 #define WPXPARSER_H
 
-#include <librevenge/librevenge.h>
-#include "WPXHeader.h"
-#include "WPXEncryption.h"
+class WPXDocumentInterface;
+class WPXHeader;
+class WPXInputStream;
+class WPXEncryption;
 
 class WPXParser
 {
 public:
-	WPXParser(librevenge::RVNGInputStream *input, WPXHeader *header, WPXEncryption *encryption);
+	WPXParser(WPXInputStream *input, WPXHeader *header, WPXEncryption *encryption);
 	virtual ~WPXParser() {}
 
-	virtual void parse(librevenge::RVNGTextInterface *documentInterface) = 0;
-	virtual void parseSubDocument(librevenge::RVNGTextInterface *documentInterface) = 0;
+	virtual void parse(WPXDocumentInterface *documentInterface) = 0;
+	virtual void parseSubDocument(WPXDocumentInterface *documentInterface) = 0;
 
 protected:
 	WPXHeader *getHeader()
 	{
 		return m_header;
 	}
-	librevenge::RVNGInputStream *getInput()
+	WPXInputStream *getInput()
 	{
 		return m_input;
 	}
@@ -57,7 +58,7 @@ protected:
 private:
 	WPXParser(const WPXParser &);
 	WPXParser &operator=(const WPXParser &);
-	librevenge::RVNGInputStream *m_input;
+	WPXInputStream *m_input;
 	WPXHeader *m_header;
 	WPXEncryption *m_encryption;
 };

@@ -30,7 +30,7 @@
 #include "WPXFileStructure.h"
 #include "WP6Listener.h"
 
-WP6TabGroup::WP6TabGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption) :
+WP6TabGroup::WP6TabGroup(WPXInputStream *input, WPXEncryption *encryption) :
 	WP6VariableLengthGroup(),
 	m_position(0.0),
 	m_ignoreFunction(false)
@@ -38,9 +38,9 @@ WP6TabGroup::WP6TabGroup(librevenge::RVNGInputStream *input, WPXEncryption *encr
 	_read(input, encryption);
 }
 
-void WP6TabGroup::_readContents(librevenge::RVNGInputStream *input, WPXEncryption *encryption)
+void WP6TabGroup::_readContents(WPXInputStream *input, WPXEncryption *encryption)
 {
-	unsigned short tempPosition = 0xFFFF;
+	uint16_t tempPosition = 0xFFFF;
 	if ((getFlags() & 0x40) == 0x40) // 0x40 is "ignore function" flag
 	{
 		m_ignoreFunction = true;
@@ -50,7 +50,7 @@ void WP6TabGroup::_readContents(librevenge::RVNGInputStream *input, WPXEncryptio
 	 * Tab Group. It is result of adjustment by trials and errors and can be wrong in certain cases */
 
 	if ((getSubGroup() & 0xC0) == 0x00)
-		/* Left aligned tabs contain  the position of the tab as a word (unsigned short) in WPUs
+		/* Left aligned tabs contain  the position of the tab as a word (uint16_t) in WPUs
 		 * from left edge of the paper just after the size of "non-deletable" */
 	{
 		tempPosition = readU16(input, encryption);
@@ -59,12 +59,12 @@ void WP6TabGroup::_readContents(librevenge::RVNGInputStream *input, WPXEncryptio
 		/* This case might be fully included in the previous condition, but I am not sure;
 		 * so leaving it in for the while */
 	{
-		input->seek((getSize() - 12), librevenge::RVNG_SEEK_CUR);
+		input->seek((getSize() - 12), WPX_SEEK_CUR);
 		tempPosition = readU16(input, encryption);
 	}
 	else if (getSize() > 18)
 	{
-		input->seek(6, librevenge::RVNG_SEEK_CUR);
+		input->seek(6, WPX_SEEK_CUR);
 		tempPosition = readU16(input, encryption);
 	}
 	// If we got a tempPosition of 0, it means, the information in WPUs is not there (WP6 for DOS??).

@@ -34,16 +34,16 @@
 class WP3ExtendedCharacterGroup : public WP3FixedLengthGroup
 {
 public:
-	WP3ExtendedCharacterGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption, unsigned char groupID);
+	WP3ExtendedCharacterGroup(WPXInputStream *input, WPXEncryption *encryption, uint8_t groupID);
 	void parse(WP3Listener *listener);
 
 protected:
-	void _readContents(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	void _readContents(WPXInputStream *input, WPXEncryption *encryption);
 
 private:
-	unsigned char m_macCharacter;
-	unsigned char m_characterSet;
-	unsigned char m_character;
+	uint8_t m_macCharacter;
+	uint8_t m_characterSet;
+	uint8_t m_character;
 };
 
 #endif /* WP3EXTENDEDCHARACTERGROUP_H */

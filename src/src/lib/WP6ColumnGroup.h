@@ -27,27 +27,27 @@
 #ifndef WP6COLUMNGROUP_H
 #define WP6COLUMNGROUP_H
 
-#include <vector>
-#include <librevenge/librevenge.h>
 #include "WP6VariableLengthGroup.h"
+#include <vector>
 #include "libwpd_internal.h"
 
+class WPXInputStream;
 class WP6Listener;
 
 class WP6ColumnGroup : public WP6VariableLengthGroup
 {
 public:
-	WP6ColumnGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
-	void _readContents(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	WP6ColumnGroup(WPXInputStream *input, WPXEncryption *encryption);
+	void _readContents(WPXInputStream *input, WPXEncryption *encryption);
 	void parse(WP6Listener *listener);
 
 private:
 	// variables needed for subgroup 0 and 1 (Left/Right Margin Set)
-	unsigned short m_margin;
+	uint16_t m_margin;
 
 	// variables used for subgroup 2 (Columns)
-	unsigned char m_colType;
-	unsigned char m_numColumns;
+	uint8_t m_colType;
+	uint8_t m_numColumns;
 	double m_rowSpacing;
 	std::vector<bool> m_isFixedWidth;
 	std::vector<double> m_columnWidth;

@@ -30,7 +30,7 @@
 #include "WP6FileStructure.h"
 #include "WPXFileStructure.h"
 
-WP6ColumnGroup::WP6ColumnGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption) :
+WP6ColumnGroup::WP6ColumnGroup(WPXInputStream *input, WPXEncryption *encryption) :
 	WP6VariableLengthGroup(),
 	m_margin(0),
 	m_colType(0),
@@ -42,7 +42,7 @@ WP6ColumnGroup::WP6ColumnGroup(librevenge::RVNGInputStream *input, WPXEncryption
 	_read(input, encryption);
 }
 
-void WP6ColumnGroup::_readContents(librevenge::RVNGInputStream *input, WPXEncryption *encryption)
+void WP6ColumnGroup::_readContents(WPXInputStream *input, WPXEncryption *encryption)
 {
 	// this group can contain different kinds of data, thus we need to read
 	// the contents accordingly
@@ -58,15 +58,15 @@ void WP6ColumnGroup::_readContents(librevenge::RVNGInputStream *input, WPXEncryp
 	case 2:
 	{
 		m_colType = readU8(input, encryption);
-		unsigned tmpRowSpacing = readU32(input, encryption);
-		signed short tmpRowSpacingIntegerPart = (signed short)((tmpRowSpacing & 0xffff0000) >> 16);
+		uint32_t tmpRowSpacing = readU32(input, encryption);
+		int16_t tmpRowSpacingIntegerPart = (int16_t)((tmpRowSpacing & 0xffff0000) >> 16);
 		double tmpRowSpacingFractionalPart = (double)((double)(tmpRowSpacing & 0xffff)/(double)0x10000);
 		m_rowSpacing = (double)tmpRowSpacingIntegerPart + tmpRowSpacingFractionalPart;
 		m_numColumns = readU8(input, encryption);
 		if (m_numColumns > 1)
 		{
-			unsigned short tmpWidth;
-			unsigned char tmpDefinition;
+			uint16_t tmpWidth;
+			uint8_t tmpDefinition;
 			for (int i=0; i<((2*m_numColumns)-1); i++)
 			{
 				tmpDefinition = readU8(input, encryption);

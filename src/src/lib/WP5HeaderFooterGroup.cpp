@@ -26,9 +26,9 @@
 #include "WP5HeaderFooterGroup.h"
 #include "libwpd_internal.h"
 
-WP5HeaderFooterGroup::WP5HeaderFooterGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption) :
+WP5HeaderFooterGroup::WP5HeaderFooterGroup(WPXInputStream *input, WPXEncryption *encryption) :
 	WP5VariableLengthGroup(),
-	m_occurrenceBits(0),
+	m_occurenceBits(0),
 	m_subDocument(0)
 {
 	_read(input, encryption);
@@ -38,15 +38,15 @@ WP5HeaderFooterGroup::~WP5HeaderFooterGroup()
 {
 }
 
-void WP5HeaderFooterGroup::_readContents(librevenge::RVNGInputStream *input, WPXEncryption *encryption)
+void WP5HeaderFooterGroup::_readContents(WPXInputStream *input, WPXEncryption *encryption)
 {
 	int tmpSubDocumentLength = getSize() - 26;
 	WPD_DEBUG_MSG(("WordPerfect: reading HeaderFooter group. SubDocument size: %i\n", tmpSubDocumentLength));
-	input->seek(7, librevenge::RVNG_SEEK_CUR);
-	m_occurrenceBits = readU8(input, encryption);
-	if (m_occurrenceBits)
+	input->seek(7, WPX_SEEK_CUR);
+	m_occurenceBits = readU8(input, encryption);
+	if (m_occurenceBits)
 	{
-		input->seek(10, librevenge::RVNG_SEEK_CUR);
+		input->seek(10, WPX_SEEK_CUR);
 		if (tmpSubDocumentLength > 0)
 			m_subDocument = new WP5SubDocument(input, encryption, (unsigned)tmpSubDocumentLength);
 	}
@@ -56,6 +56,6 @@ void WP5HeaderFooterGroup::parse(WP5Listener *listener)
 {
 	WPD_DEBUG_MSG(("WordPerfect: handling a HeaderFooter group\n"));
 
-	listener->headerFooterGroup(getSubGroup(), m_occurrenceBits, m_subDocument);
+	listener->headerFooterGroup(getSubGroup(), m_occurenceBits, m_subDocument);
 }
 /* vim:set shiftwidth=4 softtabstop=4 noexpandtab: */

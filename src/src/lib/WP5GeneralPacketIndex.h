@@ -26,39 +26,40 @@
 #ifndef WP5GENERALPACKETINDEX_H
 #define WP5GENERALPACKETINDEX_H
 
-#include <librevenge-stream/librevenge-stream.h>
+#include <libwpd-stream/libwpd-stream.h>
+#include "libwpd_types.h"
 
 class WPXEncryption;
 
 class WP5GeneralPacketIndex
 {
 public:
-	WP5GeneralPacketIndex(librevenge::RVNGInputStream *input, WPXEncryption *encryption, int id);
+	WP5GeneralPacketIndex(WPXInputStream *input, WPXEncryption *encryption, int id);
 	int getID() const
 	{
 		return m_id;
 	}
-	unsigned short getType() const
+	uint16_t getType() const
 	{
 		return m_type;
 	}
-	unsigned getDataSize() const
+	uint32_t getDataSize() const
 	{
 		return m_dataSize;
 	}
-	unsigned getDataOffset() const
+	uint32_t getDataOffset() const
 	{
 		return m_dataOffset;
 	}
 
 protected:
-	void _read(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	void _read(WPXInputStream *input, WPXEncryption *encryption);
 
 private:
 	int m_id;
-	unsigned short m_type;
-	unsigned m_dataSize;
-	unsigned m_dataOffset;
+	uint16_t m_type;
+	uint32_t m_dataSize;
+	uint32_t m_dataOffset;
 };
 
 #endif /* WP5GENERALPACKETINDEX_H */

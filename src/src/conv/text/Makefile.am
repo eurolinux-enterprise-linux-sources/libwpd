@@ -1,24 +1,25 @@
-if BUILD_TOOLS
+if WITH_LIBWPD_STREAM
+target_wpd2text = wpd2text
+else
+target_wpd2text =
+endif
 
-bin_PROGRAMS = wpd2text
+bin_PROGRAMS = $(target_wpd2text)
 
-AM_CXXFLAGS = \
-	-I$(top_srcdir)/inc \
-	$(REVENGE_CFLAGS) \
-	$(REVENGE_GENERATORS_CFLAGS) \
-	$(REVENGE_STREAM_CFLAGS) \
-	$(DEBUG_CXXFLAGS)
+AM_CXXFLAGS = -I$(top_srcdir)/inc $(DEBUG_CXXFLAGS)
 
 wpd2text_DEPENDENCIES = @WPD2TEXT_WIN32_RESOURCE@ 
 
-wpd2text_LDADD = \
-	../../lib/libwpd-@WPD_MAJOR_VERSION@.@WPD_MINOR_VERSION@.la \
-	$(REVENGE_GENERATORS_LIBS) \
-	$(REVENGE_LIBS) \
-	$(REVENGE_STREAM_LIBS) \
-	@WPD2TEXT_WIN32_RESOURCE@
+if STATIC_TOOLS
+wpd2text_LDADD = ../../lib/@WPD_OBJDIR@/libwpd-@WPD_MAJOR_VERSION@.@WPD_MINOR_VERSION@.a ../../lib/@WPD_OBJDIR@/libwpd-stream-@WPD_MAJOR_VERSION@.@WPD_MINOR_VERSION@.a @WPD2TEXT_WIN32_RESOURCE@
+wpd2text_LDFLAGS = -all-static
+else
+wpd2text_LDADD = ../../lib/libwpd-@WPD_MAJOR_VERSION@.@WPD_MINOR_VERSION@.la ../../lib/libwpd-stream-@WPD_MAJOR_VERSION@.@WPD_MINOR_VERSION@.la @WPD2TEXT_WIN32_RESOURCE@
+endif
  
 wpd2text_SOURCES = \
+	TextDocumentGenerator.cpp \
+	TextDocumentGenerator.h \
 	wpd2text.cpp
 
 if OS_WIN32
@@ -37,4 +38,3 @@ EXTRA_DIST = \
 BUILD_EXTRA_DIST = \
 	wpd2text.rc	 
  
-endif

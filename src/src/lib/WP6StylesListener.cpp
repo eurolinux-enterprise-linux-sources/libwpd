@@ -62,7 +62,7 @@ void WP6StylesListener::endSubDocument()
 	insertBreak(WPX_SOFT_PAGE_BREAK); // pretend we just had a soft page break (for the last page)
 }
 
-void WP6StylesListener::insertBreak(const unsigned char breakType)
+void WP6StylesListener::insertBreak(const uint8_t breakType)
 {
 	if (m_isSubDocument)
 		return;
@@ -100,7 +100,7 @@ void WP6StylesListener::insertBreak(const unsigned char breakType)
 	}
 }
 
-void WP6StylesListener::pageNumberingChange(const WPXPageNumberPosition pageNumberingPosition, const unsigned short pageNumberFontPointSize, const unsigned short pageNumberFontPID)
+void WP6StylesListener::pageNumberingChange(const WPXPageNumberPosition pageNumberingPosition, const uint16_t pageNumberFontPointSize, const uint16_t pageNumberFontPID)
 {
 	if (!isUndoOn())
 	{
@@ -108,8 +108,8 @@ void WP6StylesListener::pageNumberingChange(const WPXPageNumberPosition pageNumb
 
 		if (pageNumberFontPID)
 		{
-			librevenge::RVNGString pidFontName = WP6Listener::getFontNameForPID(pageNumberFontPID);
-			if (!pidFontName.empty())
+			WPXString pidFontName = WP6Listener::getFontNameForPID(pageNumberFontPID);
+			if (!!pidFontName)
 				m_currentPage.setPageNumberingFontName(pidFontName);
 		}
 
@@ -117,12 +117,12 @@ void WP6StylesListener::pageNumberingChange(const WPXPageNumberPosition pageNumb
 	}
 }
 
-void WP6StylesListener::pageMarginChange(const unsigned char side, const unsigned short margin)
+void WP6StylesListener::pageMarginChange(const uint8_t side, const uint16_t margin)
 {
 	if (!isUndoOn())
 	{
 		double marginInch = (double)((double)margin / (double)WPX_NUM_WPUS_PER_INCH);
-		switch (side)
+		switch(side)
 		{
 		case WPX_TOP:
 			m_currentPage.setMarginTop(marginInch);
@@ -136,7 +136,7 @@ void WP6StylesListener::pageMarginChange(const unsigned char side, const unsigne
 	}
 }
 
-void WP6StylesListener::pageFormChange(const unsigned short length, const unsigned short width, const WPXFormOrientation orientation)
+void WP6StylesListener::pageFormChange(const uint16_t length, const uint16_t width, const WPXFormOrientation orientation)
 {
 	if (!isUndoOn())
 	{
@@ -151,7 +151,7 @@ void WP6StylesListener::pageFormChange(const unsigned short length, const unsign
 	}
 }
 
-void WP6StylesListener::marginChange(const unsigned char side, const unsigned short margin)
+void WP6StylesListener::marginChange(const uint8_t side, const uint16_t margin)
 {
 	if (!isUndoOn())
 	{
@@ -160,7 +160,7 @@ void WP6StylesListener::marginChange(const unsigned char side, const unsigned sh
 
 		std::list<WPXPageSpan>::iterator Iter;
 		double marginInch = (double)((double)margin / (double)WPX_NUM_WPUS_PER_INCH);
-		switch (side)
+		switch(side)
 		{
 		case WPX_LEFT:
 			if (!m_currentPageHasContent && (m_pageListHardPageMark == m_pageList.end()))
@@ -198,27 +198,27 @@ void WP6StylesListener::marginChange(const unsigned char side, const unsigned sh
 
 }
 
-void WP6StylesListener::headerFooterGroup(const unsigned char headerFooterType, const unsigned char occurrenceBits, const unsigned short textPID)
+void WP6StylesListener::headerFooterGroup(const uint8_t headerFooterType, const uint8_t occurenceBits, const uint16_t textPID)
 {
 	if (!isUndoOn())
 	{
-		WPD_DEBUG_MSG(("WordPerfect: headerFooterGroup (headerFooterType: %i, occurrenceBits: %i, textPID: %i)\n",
-		               headerFooterType, occurrenceBits, textPID));
+		WPD_DEBUG_MSG(("WordPerfect: headerFooterGroup (headerFooterType: %i, occurenceBits: %i, textPID: %i)\n",
+		               headerFooterType, occurenceBits, textPID));
 		bool tempCurrentPageHasContent = m_currentPageHasContent;
 		if (headerFooterType <= WP6_HEADER_FOOTER_GROUP_FOOTER_B) // ignore watermarks for now
 		{
 			WPXHeaderFooterType wpxType = ((headerFooterType <= WP6_HEADER_FOOTER_GROUP_HEADER_B) ? HEADER : FOOTER);
 
-			WPXHeaderFooterOccurrence wpxOccurrence;
-			if (occurrenceBits & WP6_HEADER_FOOTER_GROUP_EVEN_BIT && occurrenceBits & WP6_HEADER_FOOTER_GROUP_ODD_BIT)
-				wpxOccurrence = ALL;
-			else if (occurrenceBits & WP6_HEADER_FOOTER_GROUP_EVEN_BIT)
-				wpxOccurrence = EVEN;
+			WPXHeaderFooterOccurence wpxOccurence;
+			if (occurenceBits & WP6_HEADER_FOOTER_GROUP_EVEN_BIT && occurenceBits & WP6_HEADER_FOOTER_GROUP_ODD_BIT)
+				wpxOccurence = ALL;
+			else if (occurenceBits & WP6_HEADER_FOOTER_GROUP_EVEN_BIT)
+				wpxOccurence = EVEN;
 			else
-				wpxOccurrence = ODD;
+				wpxOccurence = ODD;
 
 			WPXTableList tableList;
-			m_currentPage.setHeaderFooter(wpxType, headerFooterType, wpxOccurrence,
+			m_currentPage.setHeaderFooter(wpxType, headerFooterType, wpxOccurence,
 			                              ((textPID && WP6Listener::getPrefixDataPacket(textPID)) ? WP6Listener::getPrefixDataPacket(textPID)->getSubDocument() : 0), tableList);
 			_handleSubDocument(((textPID && WP6Listener::getPrefixDataPacket(textPID)) ? WP6Listener::getPrefixDataPacket(textPID)->getSubDocument() : 0), WPX_SUBDOCUMENT_HEADER_FOOTER, tableList);
 		}
@@ -226,7 +226,7 @@ void WP6StylesListener::headerFooterGroup(const unsigned char headerFooterType, 
 	}
 }
 
-void WP6StylesListener::suppressPageCharacteristics(const unsigned char suppressCode)
+void WP6StylesListener::suppressPageCharacteristics(const uint8_t suppressCode)
 {
 	if (!isUndoOn())
 	{
@@ -246,7 +246,7 @@ void WP6StylesListener::suppressPageCharacteristics(const unsigned char suppress
 	}
 }
 
-void WP6StylesListener::setPageNumber(const unsigned short pageNumber)
+void WP6StylesListener::setPageNumber(const uint16_t pageNumber)
 {
 	if (!isUndoOn())
 	{
@@ -262,7 +262,7 @@ void WP6StylesListener::setPageNumberingType(const WPXNumberingType pageNumberin
 	}
 }
 
-void WP6StylesListener::defineTable(const unsigned char /* position */, const unsigned short /* leftOffset */)
+void WP6StylesListener::defineTable(const uint8_t /* position */, const uint16_t /* leftOffset */)
 {
 	if (!isUndoOn())
 	{
@@ -294,7 +294,7 @@ void WP6StylesListener::endTable()
 	}
 }
 
-void WP6StylesListener::insertRow(const unsigned short /* rowHeight */, const bool /* isMinimumHeight */, const bool /* isHeaderRow */)
+void WP6StylesListener::insertRow(const uint16_t /* rowHeight */, const bool /* isMinimumHeight */, const bool /* isHeaderRow */)
 {
 	if (!isUndoOn() && m_currentTable)
 	{
@@ -303,10 +303,10 @@ void WP6StylesListener::insertRow(const unsigned short /* rowHeight */, const bo
 	}
 }
 
-void WP6StylesListener::insertCell(const unsigned char colSpan, const unsigned char rowSpan, const unsigned char borderBits,
+void WP6StylesListener::insertCell(const uint8_t colSpan, const uint8_t rowSpan, const uint8_t borderBits,
                                    const RGBSColor * /* cellFgColor */, const RGBSColor * /* cellBgColor */,
                                    const RGBSColor * /* cellBorderColor */, const WPXVerticalAlignment /* cellVerticalAlignment */,
-                                   const bool /* useCellAttributes */, const unsigned /* cellAttributes */)
+                                   const bool /* useCellAttributes */, const uint32_t /* cellAttributes */)
 {
 	if (!isUndoOn() && m_currentTable)
 	{
@@ -315,7 +315,7 @@ void WP6StylesListener::insertCell(const unsigned char colSpan, const unsigned c
 	}
 }
 
-void WP6StylesListener::noteOn(const unsigned short textPID)
+void WP6StylesListener::noteOn(const uint16_t textPID)
 {
 	if (!isUndoOn())
 	{
@@ -333,7 +333,7 @@ void WP6StylesListener::insertTextBox(const WP6SubDocument *subDocument)
 	}
 }
 
-void WP6StylesListener::commentAnnotation(const unsigned short textPID)
+void WP6StylesListener::commentAnnotation(const uint16_t textPID)
 {
 	if (!isUndoOn())
 	{
@@ -343,7 +343,7 @@ void WP6StylesListener::commentAnnotation(const unsigned short textPID)
 }
 
 void WP6StylesListener::_handleSubDocument(const WPXSubDocument *subDocument, WPXSubDocumentType subDocumentType, WPXTableList tableList,
-                                           int /* nextTableIndice */)
+        int /* nextTableIndice */)
 {
 	// We don't want to actual insert anything in the case of a sub-document, but we
 	// do want to capture whatever table-related information is within it..
@@ -381,7 +381,7 @@ void WP6StylesListener::_handleSubDocument(const WPXSubDocument *subDocument, WP
 	}
 }
 
-void WP6StylesListener::undoChange(const unsigned char undoType, const unsigned short /* undoLevel */)
+void WP6StylesListener::undoChange(const uint8_t undoType, const uint16_t /* undoLevel */)
 {
 	if (undoType == WP6_UNDO_GROUP_INVALID_TEXT_START)
 		setUndoOn(true);

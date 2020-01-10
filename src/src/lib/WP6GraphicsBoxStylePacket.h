@@ -27,71 +27,71 @@
 #define WP6GRAPHICSBOXSTYLEPACKET_H
 
 #include <libwpd/libwpd.h>
-#include <librevenge-stream/librevenge-stream.h>
+#include <libwpd-stream/libwpd-stream.h>
 #include "WP6PrefixDataPacket.h"
 #include "WP6Listener.h"
 
 class WP6GraphicsBoxStylePacket : public WP6PrefixDataPacket
 {
 public:
-	WP6GraphicsBoxStylePacket(librevenge::RVNGInputStream *input, WPXEncryption *encryption, int id, unsigned dataOffset, unsigned dataSize);
+	WP6GraphicsBoxStylePacket(WPXInputStream *input, WPXEncryption *encryption, int id, uint32_t dataOffset, uint32_t dataSize);
 	~WP6GraphicsBoxStylePacket();
-	void _readContents(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	void _readContents(WPXInputStream *input, WPXEncryption *encryption);
 	void parse(WP6Listener * /*listener*/) const {}
 
-	unsigned char getGeneralPositioningFlags() const
+	uint8_t getGeneralPositioningFlags() const
 	{
 		return m_generalPositioningFlags;
 	}
-	unsigned char getHorizontalPositioningFlags() const
+	uint8_t getHorizontalPositioningFlags() const
 	{
 		return m_horizontalPositioningFlags;
 	}
-	signed short getHorizontalOffset() const
+	int16_t getHorizontalOffset() const
 	{
 		return m_horizontalOffset;
 	}
-	unsigned char getLeftColumn() const
+	uint8_t getLeftColumn() const
 	{
 		return m_leftColumn;
 	}
-	unsigned char getRightColumn() const
+	uint8_t getRightColumn() const
 	{
 		return m_rightColumn;
 	}
-	unsigned char getVerticalPositioningFlags() const
+	uint8_t getVerticalPositioningFlags() const
 	{
 		return m_verticalPositioningFlags;
 	}
-	signed short getVerticalOffset() const
+	int16_t getVerticalOffset() const
 	{
 		return m_verticalOffset;
 	}
-	unsigned char getWidthFlags() const
+	uint8_t getWidthFlags() const
 	{
 		return m_widthFlags;
 	}
-	unsigned short getWidth() const
+	uint16_t getWidth() const
 	{
 		return m_width;
 	}
-	unsigned char getHeightFlags() const
+	uint8_t getHeightFlags() const
 	{
 		return m_heightFlags;
 	}
-	unsigned short getHeight() const
+	uint16_t getHeight() const
 	{
 		return m_height;
 	}
-	unsigned char getContentType() const
+	uint8_t getContentType() const
 	{
 		return m_contentType;
 	}
-	unsigned short getNativeWidth() const
+	uint16_t getNativeWidth() const
 	{
 		return m_nativeWidth;
 	}
-	unsigned short getNativeHeight() const
+	uint16_t getNativeHeight() const
 	{
 		return m_nativeHeight;
 	}
@@ -100,20 +100,20 @@ private:
 	WP6GraphicsBoxStylePacket(const WP6GraphicsBoxStylePacket &);
 	WP6GraphicsBoxStylePacket &operator=(const WP6GraphicsBoxStylePacket &);
 	bool m_isLibraryStyle;
-	librevenge::RVNGString m_boxStyleName;
-	unsigned char m_generalPositioningFlags;
-	unsigned char m_horizontalPositioningFlags;
-	signed short m_horizontalOffset;
-	unsigned char m_leftColumn, m_rightColumn;
-	unsigned char m_verticalPositioningFlags;
-	signed short m_verticalOffset;
-	unsigned char m_widthFlags;
-	unsigned short m_width;
-	unsigned char m_heightFlags;
-	unsigned short m_height;
-	unsigned char m_contentType, m_contentHAlign, m_contentVAlign;
+	WPXString m_boxStyleName;
+	uint8_t m_generalPositioningFlags;
+	uint8_t m_horizontalPositioningFlags;
+	int16_t m_horizontalOffset;
+	uint8_t m_leftColumn, m_rightColumn;
+	uint8_t m_verticalPositioningFlags;
+	int16_t m_verticalOffset;
+	uint8_t m_widthFlags;
+	uint16_t m_width;
+	uint8_t m_heightFlags;
+	uint16_t m_height;
+	uint8_t m_contentType, m_contentHAlign, m_contentVAlign;
 	bool m_contentPreserveAspectRatio;
-	unsigned short m_nativeWidth, m_nativeHeight;
+	uint16_t m_nativeWidth, m_nativeHeight;
 };
 #endif /* WP6GRAPHICSBOXSTYLEPACKET_H */
 /* vim:set shiftwidth=4 softtabstop=4 noexpandtab: */

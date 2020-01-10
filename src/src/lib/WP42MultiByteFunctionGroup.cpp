@@ -35,12 +35,12 @@
 #include "WP42FileStructure.h"
 #include "libwpd_internal.h"
 
-WP42MultiByteFunctionGroup::WP42MultiByteFunctionGroup(unsigned char group)
+WP42MultiByteFunctionGroup::WP42MultiByteFunctionGroup(uint8_t group)
 	: m_group(group)
 {
 }
 
-WP42MultiByteFunctionGroup *WP42MultiByteFunctionGroup::constructMultiByteFunctionGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption, unsigned char group)
+WP42MultiByteFunctionGroup *WP42MultiByteFunctionGroup::constructMultiByteFunctionGroup(WPXInputStream *input, WPXEncryption *encryption, uint8_t group)
 {
 	switch (group)
 	{
@@ -61,15 +61,15 @@ WP42MultiByteFunctionGroup *WP42MultiByteFunctionGroup::constructMultiByteFuncti
 	}
 }
 
-void WP42MultiByteFunctionGroup::_read(librevenge::RVNGInputStream *input, WPXEncryption *encryption)
+void WP42MultiByteFunctionGroup::_read(WPXInputStream *input, WPXEncryption *encryption)
 {
 	_readContents(input, encryption);
 
 	// skip over the remaining bytes of the group, if any
-	while (!input->isEnd() && (readU8(input, encryption) != m_group)) // getGroup()));
+	while (!input->atEOS() && (readU8(input, encryption) != m_group)) // getGroup()));
 	{
 	}
 	// IMPORTANT: if the class that implements _readContent(input, encryption) already reads the closing gate,
-	// IMPORTANT: it is necessary to make an input->seek(-1, librevenge::RVNG_SEEK_CUR) for this function to work well.
+	// IMPORTANT: it is necessary to make an input->seek(-1, WPX_SEEK_CUR) for this function to work well.
 }
 /* vim:set shiftwidth=4 softtabstop=4 noexpandtab: */

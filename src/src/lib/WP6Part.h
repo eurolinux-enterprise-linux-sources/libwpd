@@ -28,9 +28,9 @@
 #ifndef WP6PART_H
 #define WP6PART_H
 
-#include <librevenge/librevenge.h>
 #include "libwpd_internal.h"
 
+class WPXInputStream;
 class WP6Listener;
 
 class WP6Part
@@ -38,7 +38,7 @@ class WP6Part
 public:
 	virtual ~WP6Part() {}
 
-	static WP6Part *constructPart(librevenge::RVNGInputStream *input, WPXEncryption *encryption, const unsigned char readVal);
+	static WP6Part *constructPart(WPXInputStream *input, WPXEncryption *encryption, const uint8_t readVal);
 	virtual void parse(WP6Listener *listener) = 0;
 };
 

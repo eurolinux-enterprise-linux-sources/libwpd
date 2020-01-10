@@ -35,29 +35,29 @@
 class WP3PageFormatGroup : public WP3VariableLengthGroup
 {
 public:
-	WP3PageFormatGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	WP3PageFormatGroup(WPXInputStream *input, WPXEncryption *encryption);
 	~WP3PageFormatGroup();
-	void _readContents(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	void _readContents(WPXInputStream *input, WPXEncryption *encryption);
 	void parse(WP3Listener *listener);
 
 private:
 	// variables needed for subgroup 0x01 (Horizontal Margins)
-	unsigned m_leftMargin;
-	unsigned m_rightMargin;
+	uint32_t m_leftMargin;
+	uint32_t m_rightMargin;
 	// variable needed for subgroup 0x02 (Line Spacing)
 	double m_lineSpacing;
 	// variables needed for subgroup 0x04 (Set Tabs)
 	bool m_isRelative;
 	std::vector<WPXTabStop> m_tabStops;
 	// variables needed for subgroup 0x05 (Vertical Margins)
-	unsigned m_topMargin;
-	unsigned m_bottomMargin;
+	uint32_t m_topMargin;
+	uint32_t m_bottomMargin;
 	// variable needed for subgroup 0x06 (Justification Mode)
-	unsigned char m_justification;
+	uint8_t m_justification;
 	// variable needed for subgroup 0x07 (Suppress Page)
-	unsigned short m_suppressCode;
+	uint16_t m_suppressCode;
 	// variable needed for subgroup 0x0C (Indent At Beginning of Line)
-	unsigned m_indent;
+	uint32_t m_indent;
 
 };
 

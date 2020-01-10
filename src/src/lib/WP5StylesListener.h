@@ -43,54 +43,54 @@ public:
 
 	void startDocument() {}
 	void startSubDocument() {}
-	void setFont(const librevenge::RVNGString & /* fontName */, double /* fontSize */) {}
-	void setTabs(const std::vector<WPXTabStop> & /* tabStops */, unsigned short /* tabOffset */) {}
-	void insertCharacter(unsigned /* character */)
+	void setFont(const WPXString & /* fontName */, double /* fontSize */) {}
+	void setTabs(const std::vector<WPXTabStop> & /* tabStops */, uint16_t /* tabOffset */) {}
+	void insertCharacter(uint32_t /* character */)
 	{
 		/*if (!isUndoOn())*/ m_currentPageHasContent = true;
 	}
-	void insertTab(unsigned char /* tabType */, double /* tabPosition */)
+	void insertTab(uint8_t /* tabType */, double /* tabPosition */)
 	{
 		/*if (!isUndoOn())*/ m_currentPageHasContent = true;
 	}
-	virtual void insertIndent(unsigned char /* indentType */, double /* indentPosition */)
+	virtual void insertIndent(uint8_t /* indentType */, double /* indentPosition */)
 	{
 		/*if (!isUndoOn())*/ m_currentPageHasContent = true;
 	}
-	void characterColorChange(unsigned char /* red */, unsigned char /* green */, unsigned char /* blue */) {}
+	void characterColorChange(uint8_t /* red */, uint8_t /* green */, uint8_t /* blue */) {}
 	void insertEOL()
 	{
 		/*if (!isUndoOn())*/ m_currentPageHasContent = true;
 	}
-	void insertBreak(unsigned char breakType);
-	void attributeChange(bool /* isOn */, unsigned char /* attribute */) {}
+	void insertBreak(uint8_t breakType);
+	void attributeChange(bool /* isOn */, uint8_t /* attribute */) {}
 	void lineSpacingChange(double /* lineSpacing */) {}
-	void justificationChange(unsigned char /* justification */) {}
-	void pageMarginChange(unsigned char side, unsigned short margin);
-	void pageFormChange(unsigned short length, unsigned short width, WPXFormOrientation orientation);
-	void marginChange(unsigned char side, unsigned short margin);
+	void justificationChange(uint8_t /* justification */) {}
+	void pageMarginChange(uint8_t side, uint16_t margin);
+	void pageFormChange(uint16_t length, uint16_t width, WPXFormOrientation orientation);
+	void marginChange(uint8_t side, uint16_t margin);
 	void endDocument();
 	void endSubDocument();
 
-	void defineTable(unsigned char /* position */, unsigned short /* leftOffset */) {}
-	void addTableColumnDefinition(unsigned /* width */, unsigned /* leftGutter */, unsigned /* rightGutter */,
-	                              unsigned /* attributes */, unsigned char /* alignment */) {}
+	void defineTable(uint8_t /* position */, uint16_t /* leftOffset */) {}
+	void addTableColumnDefinition(uint32_t /* width */, uint32_t /* leftGutter */, uint32_t /* rightGutter */,
+	                              uint32_t /* attributes */, uint8_t /* alignment */) {}
 	void startTable();
-	void insertRow(unsigned short rowHeight, bool isMinimumHeight, bool isHeaderRow);
-	void insertCell(unsigned char colSpan, unsigned char rowSpan, unsigned char borderBits,
+	void insertRow(uint16_t rowHeight, bool isMinimumHeight, bool isHeaderRow);
+	void insertCell(uint8_t colSpan, uint8_t rowSpan, uint8_t borderBits,
 	                const RGBSColor *cellFgColor, const RGBSColor *cellBgColor,
 	                const RGBSColor *cellBorderColor, WPXVerticalAlignment cellVerticalAlignment,
-	                bool useCellAttributes, unsigned cellAttributes);
+	                bool useCellAttributes, uint32_t cellAttributes);
 	void endTable() {}
 
-	void insertNoteReference(const librevenge::RVNGString & /* noteReference */) {}
+	void insertNoteReference(const WPXString & /* noteReference */) {}
 	void insertNote(WPXNoteType /* noteType */, const WP5SubDocument * /* subDocument */) {}
-	void headerFooterGroup(unsigned char headerFooterType, unsigned char occurrenceBits, WP5SubDocument *subDocument);
-	void suppressPageCharacteristics(unsigned char suppressCode);
+	void headerFooterGroup(uint8_t headerFooterType, uint8_t occurenceBits, WP5SubDocument *subDocument);
+	void suppressPageCharacteristics(uint8_t suppressCode);
 
-	void boxOn(unsigned char /* positionAndType */, unsigned char /* alignment */, unsigned short /* width */, unsigned short /* height */, unsigned short /* x */, unsigned short /* y */) {}
+	void boxOn(uint8_t /* positionAndType */, uint8_t /* alignment */, uint16_t /* width */, uint16_t /* height */, uint16_t /* x */, uint16_t /* y */) {}
 	virtual void boxOff() {}
-	virtual void insertGraphicsData(const librevenge::RVNGBinaryData * /* data */) {}
+	virtual void insertGraphicsData(const WPXBinaryData * /* data */) {}
 
 protected:
 	void _handleSubDocument(const WPXSubDocument *subDocument, WPXSubDocumentType subDocumentType, WPXTableList tableList, int nextTableIndice = 0);

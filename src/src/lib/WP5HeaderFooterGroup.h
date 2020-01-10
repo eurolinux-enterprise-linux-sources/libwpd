@@ -32,15 +32,15 @@
 class WP5HeaderFooterGroup : public WP5VariableLengthGroup
 {
 public:
-	WP5HeaderFooterGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	WP5HeaderFooterGroup(WPXInputStream *input, WPXEncryption *encryption);
 	~WP5HeaderFooterGroup();
-	void _readContents(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	void _readContents(WPXInputStream *input, WPXEncryption *encryption);
 	void parse(WP5Listener *listener);
 
 private:
 	WP5HeaderFooterGroup(const WP5HeaderFooterGroup &);
 	WP5HeaderFooterGroup &operator=(const WP5HeaderFooterGroup &);
-	unsigned char m_occurrenceBits;
+	uint8_t m_occurenceBits;
 	WP5SubDocument *m_subDocument;
 };
 

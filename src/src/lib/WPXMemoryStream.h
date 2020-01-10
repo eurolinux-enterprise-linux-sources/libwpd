@@ -25,42 +25,28 @@
 
 #ifndef MEMORYSTREAM_H
 #define MEMORYSTREAM_H
-#include <librevenge-stream/librevenge-stream.h>
+#include <libwpd-stream/libwpd-stream.h>
 
-class WPXMemoryInputStream : public librevenge::RVNGInputStream
+class WPXMemoryInputStream : public WPXInputStream
 {
 public:
 	WPXMemoryInputStream(unsigned char *data, unsigned long size);
-	~WPXMemoryInputStream();
-	bool isStructured()
+	virtual ~WPXMemoryInputStream();
+
+	virtual bool isOLEStream()
 	{
 		return false;
 	}
-	unsigned subStreamCount()
+	virtual WPXInputStream *getDocumentOLEStream(const char *)
 	{
 		return 0;
 	}
-	const char *subStreamName(unsigned)
-	{
-		return 0;
-	}
-	bool existsSubStream(const char *)
-	{
-		return false;
-	}
-	librevenge::RVNGInputStream *getSubStreamByName(const char *)
-	{
-		return 0;
-	}
-	librevenge::RVNGInputStream *getSubStreamById(unsigned)
-	{
-		return 0;
-	}
-	const unsigned char *read(unsigned long numBytes, unsigned long &numBytesRead);
-	int seek(long offset, librevenge::RVNG_SEEK_TYPE seekType);
-	long tell();
-	bool isEnd();
-	unsigned long getSize() const
+
+	virtual const unsigned char *read(unsigned long numBytes, unsigned long &numBytesRead);
+	virtual int seek(long offset, WPX_SEEK_TYPE seekType);
+	virtual long tell();
+	virtual bool atEOS();
+	virtual unsigned long getSize() const
 	{
 		return m_size;
 	}

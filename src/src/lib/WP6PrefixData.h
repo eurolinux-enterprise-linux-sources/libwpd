@@ -38,14 +38,14 @@ typedef MPDP::iterator MPDP_Iter;
 class WP6PrefixData
 {
 public:
-	WP6PrefixData(librevenge::RVNGInputStream *input, WPXEncryption *encryption, const int numPrefixIndices);
+	WP6PrefixData(WPXInputStream *input, WPXEncryption *encryption, const int numPrefixIndices);
 	virtual ~WP6PrefixData();
 	const WP6PrefixDataPacket *getPrefixDataPacket(const int prefixID) const;
 	std::pair< MPDP_CIter, MPDP_CIter > getPrefixDataPacketsOfType(const int type) const;
 
-	unsigned short getDefaultInitialFontPID() const
+	uint16_t getDefaultInitialFontPID() const
 	{
-		return (unsigned short)m_defaultInitialFontPID;
+		return (uint16_t)m_defaultInitialFontPID;
 	}
 
 private:

@@ -27,6 +27,7 @@
 #define WPXSUBDOCUMENT_H
 
 #include "WPXMemoryStream.h"
+#include "libwpd_types.h"
 
 class WPXListener;
 class WPXEncryption;
@@ -34,8 +35,8 @@ class WPXEncryption;
 class WPXSubDocument
 {
 public:
-	WPXSubDocument(librevenge::RVNGInputStream *input, WPXEncryption *encryption, const unsigned dataSize);
-	WPXSubDocument(unsigned char *streamData, const unsigned dataSize);
+	WPXSubDocument(WPXInputStream *input, WPXEncryption *encryption, const unsigned dataSize);
+	WPXSubDocument(uint8_t *streamData, const unsigned dataSize);
 	virtual ~WPXSubDocument();
 	WPXMemoryInputStream *getStream() const
 	{
@@ -44,7 +45,7 @@ public:
 
 private:
 	WPXMemoryInputStream *m_stream;
-	unsigned char *m_streamData;
+	uint8_t *m_streamData;
 	WPXSubDocument();
 	WPXSubDocument(const WPXSubDocument &);
 	WPXSubDocument &operator=(const WPXSubDocument &);

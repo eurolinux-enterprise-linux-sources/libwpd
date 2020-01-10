@@ -32,14 +32,14 @@
 class WP5ListFontsUsedPacket : public WP5GeneralPacketData
 {
 public:
-	WP5ListFontsUsedPacket(librevenge::RVNGInputStream *input, WPXEncryption *encryption, int id, unsigned dataOffset, unsigned dataSize, unsigned short packetType);
+	WP5ListFontsUsedPacket(WPXInputStream *input, WPXEncryption *encryption, int id, uint32_t dataOffset, uint32_t dataSize, uint16_t packetType);
 	~WP5ListFontsUsedPacket();
-	void _readContents(librevenge::RVNGInputStream *input, WPXEncryption *encryption, unsigned dataSize);
+	void _readContents(WPXInputStream *input, WPXEncryption *encryption, uint32_t dataSize);
 	unsigned getFontNameOffset(unsigned fontNumber) const;
 	double getFontSize(unsigned fontNumber) const;
 
 private:
-	unsigned short m_packetType;
+	uint16_t m_packetType;
 	std::vector<unsigned> m_fontNameOffset;
 	std::vector<double> m_fontSize;
 };

@@ -31,7 +31,7 @@
 #include "libwpd_internal.h"
 #include "libwpd_math.h"
 
-WP3TablesGroup::WP3TablesGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption) :
+WP3TablesGroup::WP3TablesGroup(WPXInputStream *input, WPXEncryption *encryption) :
 	m_tableMode(0),
 	m_offsetFromLeftEdge(0),
 	m_topGutterSpacing(0),
@@ -54,30 +54,30 @@ WP3TablesGroup::~WP3TablesGroup()
 {
 }
 
-void WP3TablesGroup::_readContents(librevenge::RVNGInputStream *input, WPXEncryption *encryption)
+void WP3TablesGroup::_readContents(WPXInputStream *input, WPXEncryption *encryption)
 {
 	// this group can contain different kinds of data, thus we need to read
 	// the contents accordingly
-	unsigned char i;
+	uint8_t i;
 	long startPosition = 0;
 	switch (getSubGroup())
 	{
 	case WP3_TABLES_GROUP_TABLE_FUNCTION:
 		startPosition = input->tell();
-		input->seek(71, librevenge::RVNG_SEEK_CUR);
+		input->seek(71, WPX_SEEK_CUR);
 		m_tableMode = readU8(input, encryption);
 		m_offsetFromLeftEdge = readU32(input, encryption, true);
 		m_topGutterSpacing = readU32(input, encryption, true);
 		m_leftGutterSpacing = readU32(input, encryption, true);
 		m_bottomGutterSpacing = readU32(input, encryption, true);
 		m_rightGutterSpacing = readU32(input, encryption, true);
-		input->seek(3, librevenge::RVNG_SEEK_CUR);
+		input->seek(3, WPX_SEEK_CUR);
 		m_numColumns = readU8(input, encryption);
 		if ((m_numColumns > 32) || ((input->tell() - startPosition + m_numColumns*10) > (getSize() - 4)))
 			throw FileException();
 		for (i=0; i<m_numColumns; i++)
 		{
-			if (input->isEnd())
+			if (input->atEOS())
 				throw FileException();
 			m_columnMode[i] = readU8(input, encryption);
 			m_numberFormat[i] = readU8(input, encryption);
@@ -109,9 +109,9 @@ void WP3TablesGroup::_readContents(librevenge::RVNGInputStream *input, WPXEncryp
 		break;
 	case WP3_TABLES_GROUP_SET_TABLE_CELL_FILL_COLOR_PATTERN:
 	{
-		unsigned short tmpRed = readU16(input, encryption, true);
-		unsigned short tmpGreen = readU16(input, encryption, true);
-		unsigned short tmpBlue = readU16(input, encryption, true);
+		uint16_t tmpRed = readU16(input, encryption, true);
+		uint16_t tmpGreen = readU16(input, encryption, true);
+		uint16_t tmpBlue = readU16(input, encryption, true);
 		m_cellFillColor = RGBSColor(tmpRed, tmpGreen, tmpBlue);
 	}
 	break;
@@ -130,7 +130,7 @@ void WP3TablesGroup::parse(WP3Listener *listener)
 {
 	WPD_DEBUG_MSG(("WordPerfect: handling a Tables group\n"));
 
-	unsigned char i;
+	uint8_t i;
 	switch (getSubGroup())
 	{
 	case WP3_TABLES_GROUP_TABLE_FUNCTION:

@@ -27,7 +27,6 @@
 #ifndef WP3FIXEDLENGTHGROUP_H
 #define WP3FIXEDLENGTHGROUP_H
 
-#include <librevenge/librevenge.h>
 #include "WP3Part.h"
 
 class WPXEncryption;
@@ -35,21 +34,21 @@ class WPXEncryption;
 class WP3FixedLengthGroup : public WP3Part
 {
 public:
-	WP3FixedLengthGroup(const unsigned char groupID);
-	static WP3FixedLengthGroup *constructFixedLengthGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption, unsigned char const groupID);
+	WP3FixedLengthGroup(const uint8_t groupID);
+	static WP3FixedLengthGroup *constructFixedLengthGroup(WPXInputStream *input, WPXEncryption *encryption, uint8_t const groupID);
 
-	static bool isGroupConsistent(librevenge::RVNGInputStream *input, WPXEncryption *encryption, const unsigned char groupID);
+	static bool isGroupConsistent(WPXInputStream *input, WPXEncryption *encryption, const uint8_t groupID);
 
-	unsigned char getGroup() const
+	uint8_t getGroup() const
 	{
 		return m_group;
 	}
 
 protected:
-	void _read(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
-	virtual void _readContents(librevenge::RVNGInputStream *input, WPXEncryption *encryption) = 0; // we always read the contents in the case of a fixed length group
+	void _read(WPXInputStream *input, WPXEncryption *encryption);
+	virtual void _readContents(WPXInputStream *input, WPXEncryption *encryption) = 0; // we always read the contents in the case of a fixed length group
 private:
-	unsigned char m_group;
+	uint8_t m_group;
 };
 
 #endif /* WP3FIXEDLENGTHGROUP_H */

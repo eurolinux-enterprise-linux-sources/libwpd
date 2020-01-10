@@ -27,48 +27,47 @@
 #ifndef WP6FONTDESCRIPTORPACKET_H
 #define WP6FONTDESCRIPTORPACKET_H
 
-#include <librevenge/librevenge.h>
 #include <libwpd/libwpd.h>
 #include "WP6PrefixDataPacket.h"
 
 class WP6FontDescriptorPacket : public WP6PrefixDataPacket
 {
 public:
-	WP6FontDescriptorPacket(librevenge::RVNGInputStream *input, WPXEncryption *encryption, int id, unsigned dataOffset, unsigned dataSize);
+	WP6FontDescriptorPacket(WPXInputStream *input, WPXEncryption *encryption, int id, uint32_t dataOffset, uint32_t dataSize);
 	~WP6FontDescriptorPacket();
-	void _readContents(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
-	const librevenge::RVNGString &getFontName() const
+	void _readContents(WPXInputStream *input, WPXEncryption *encryption);
+	const WPXString &getFontName() const
 	{
 		return m_fontName;
 	}
 
 private:
-	void _readFontName(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	void _readFontName(WPXInputStream *input, WPXEncryption *encryption);
 
 	WP6FontDescriptorPacket(const WP6FontDescriptorPacket &);
 	WP6FontDescriptorPacket &operator=(const WP6FontDescriptorPacket &);
-	unsigned short m_characterWidth;
-	unsigned short m_ascenderHeight;
-	unsigned short m_xHeight;
-	unsigned short m_descenderHeight;
-	unsigned short m_italicsAdjust;
-	unsigned char m_primaryFamilyId; // family id's are supposed to be one unified element, but I split them up to ease parsing
-	unsigned char m_primaryFamilyMemberId;
+	uint16_t m_characterWidth;
+	uint16_t m_ascenderHeight;
+	uint16_t m_xHeight;
+	uint16_t m_descenderHeight;
+	uint16_t m_italicsAdjust;
+	uint8_t m_primaryFamilyId; // family id's are supposed to be one unified element, but I split them up to ease parsing
+	uint8_t m_primaryFamilyMemberId;
 
-	unsigned char m_scriptingSystem;
-	unsigned char m_primaryCharacterSet;
-	unsigned char m_width;
-	unsigned char m_weight;
-	unsigned char m_attributes;
-	unsigned char m_generalCharacteristics;
-	unsigned char m_classification;
-	unsigned char m_fill; // fill byte
-	unsigned char m_fontType;
-	unsigned char m_fontSourceFileType;
+	uint8_t m_scriptingSystem;
+	uint8_t m_primaryCharacterSet;
+	uint8_t m_width;
+	uint8_t m_weight;
+	uint8_t m_attributes;
+	uint8_t m_generalCharacteristics;
+	uint8_t m_classification;
+	uint8_t m_fill; // fill byte
+	uint8_t m_fontType;
+	uint8_t m_fontSourceFileType;
 
-	unsigned short m_fontNameLength;
+	uint16_t m_fontNameLength;
 
-	librevenge::RVNGString m_fontName;
+	WPXString m_fontName;
 };
 #endif
 /* vim:set shiftwidth=4 softtabstop=4 noexpandtab: */

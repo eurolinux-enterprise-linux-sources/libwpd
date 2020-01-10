@@ -28,7 +28,7 @@
 #include "WP5SpecialHeaderIndex.h"
 #include "libwpd_internal.h"
 
-WP5PrefixData::WP5PrefixData(librevenge::RVNGInputStream *input, WPXEncryption *encryption) :
+WP5PrefixData::WP5PrefixData(WPXInputStream *input, WPXEncryption *encryption) :
 	m_generalPacketData()
 {
 	std::vector<WP5GeneralPacketIndex> prefixIndexVector;
@@ -65,7 +65,7 @@ WP5PrefixData::WP5PrefixData(librevenge::RVNGInputStream *input, WPXEncryption *
 			break;
 
 		if (shi.getNextBlockOffset() != 0)
-			input->seek(shi.getNextBlockOffset(), librevenge::RVNG_SEEK_SET);
+			input->seek(shi.getNextBlockOffset(), WPX_SEEK_SET);
 		else
 			break;
 	}
@@ -86,7 +86,7 @@ WP5PrefixData::~WP5PrefixData()
 {
 	std::map<int, WP5GeneralPacketData *>::const_iterator Iter;
 	for (Iter = m_generalPacketData.begin(); Iter != m_generalPacketData.end(); ++Iter)
-		delete(Iter->second);
+		delete (Iter->second);
 }
 
 const WP5GeneralPacketData *WP5PrefixData::getGeneralPacketData(const int type) const

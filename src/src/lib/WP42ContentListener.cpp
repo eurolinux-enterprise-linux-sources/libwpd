@@ -41,7 +41,7 @@ _WP42ContentParsingState::~_WP42ContentParsingState()
 }
 
 
-WP42ContentListener::WP42ContentListener(std::list<WPXPageSpan> &pageList, std::vector<WP42SubDocument *> &subDocuments, librevenge::RVNGTextInterface *documentInterface) :
+WP42ContentListener::WP42ContentListener(std::list<WPXPageSpan> &pageList, std::vector<WP42SubDocument *> &subDocuments, WPXDocumentInterface *documentInterface) :
 	WP42Listener(),
 	WPXContentListener(pageList, documentInterface),
 	m_parseState(new WP42ContentParsingState),
@@ -58,18 +58,18 @@ WP42ContentListener::~WP42ContentListener()
 }
 
 
-void WP42ContentListener::insertCharacter(unsigned character)
+void WP42ContentListener::insertCharacter(uint32_t character)
 {
 	if (!isUndoOn())
 	{
-		unsigned tmpCharacter = _mapNonUnicodeCharacter(character);
+		uint32_t tmpCharacter = _mapNonUnicodeCharacter(character);
 		if (!m_ps->m_isSpanOpened)
 			_openSpan();
 		appendUCS4(m_parseState->m_textBuffer, tmpCharacter);
 	}
 }
 
-void WP42ContentListener::insertTab(unsigned char /* tabType */, double /* tabPosition */)
+void WP42ContentListener::insertTab(uint8_t /* tabType */, double /* tabPosition */)
 {
 	if (!isUndoOn())
 	{
@@ -96,24 +96,24 @@ void WP42ContentListener::insertEOL()
 	}
 }
 
-void WP42ContentListener::attributeChange(bool isOn, unsigned char attribute)
+void WP42ContentListener::attributeChange(bool isOn, uint8_t attribute)
 {
 	_closeSpan();
 
-	unsigned textAttributeBit = 0;
+	uint32_t textAttributeBit = 0;
 
 	// FIXME: handle all the possible attribute bits
 	switch (attribute)
 	{
-	/*case WP42_ATTRIBUTE_SUBSCRIPT:
-		textAttributeBit = WPX_SUBSCRIPT_BIT;
-		break;
-	case WP42_ATTRIBUTE_SUPERSCRIPT:
-		textAttributeBit = WPX_SUPERSCRIPT_BIT;
-		break;
-	case WP42_ATTRIBUTE_OUTLINE:
-		textAttributeBit = WPX_OUTLINE_BIT;
-		break;*/
+		/*case WP42_ATTRIBUTE_SUBSCRIPT:
+			textAttributeBit = WPX_SUBSCRIPT_BIT;
+			break;
+		case WP42_ATTRIBUTE_SUPERSCRIPT:
+			textAttributeBit = WPX_SUPERSCRIPT_BIT;
+			break;
+		case WP42_ATTRIBUTE_OUTLINE:
+			textAttributeBit = WPX_OUTLINE_BIT;
+			break;*/
 	case WP42_ATTRIBUTE_ITALICS:
 		textAttributeBit = WPX_ITALICS_BIT;
 		break;
@@ -123,9 +123,9 @@ void WP42ContentListener::attributeChange(bool isOn, unsigned char attribute)
 	case WP42_ATTRIBUTE_REDLINE:
 		textAttributeBit = WPX_REDLINE_BIT;
 		break;
-	/*case WP42_ATTRIBUTE_DOUBLE_UNDERLINE:
-		textAttributeBit = WPX_DOUBLE_UNDERLINE_BIT;
-		break;			*/
+		/*case WP42_ATTRIBUTE_DOUBLE_UNDERLINE:
+			textAttributeBit = WPX_DOUBLE_UNDERLINE_BIT;
+			break;			*/
 	case WP42_ATTRIBUTE_BOLD:
 		textAttributeBit = WPX_BOLD_BIT;
 		break;
@@ -145,7 +145,7 @@ void WP42ContentListener::attributeChange(bool isOn, unsigned char attribute)
 		m_ps->m_textAttributeBits &= ~textAttributeBit;
 }
 
-void WP42ContentListener::marginReset(unsigned char /* leftMargin */, unsigned char /* rightMargin */)
+void WP42ContentListener::marginReset(uint8_t /* leftMargin */, uint8_t /* rightMargin */)
 {
 #if 0
 	if (!isUndoOn())
@@ -158,14 +158,14 @@ void WP42ContentListener::marginReset(unsigned char /* leftMargin */, unsigned c
 #endif
 }
 
-void WP42ContentListener::headerFooterGroup(unsigned char /* headerFooterDefinition */, WP42SubDocument *subDocument)
+void WP42ContentListener::headerFooterGroup(uint8_t /* headerFooterDefinition */, WP42SubDocument *subDocument)
 {
 	if (subDocument)
 		m_subDocuments.push_back(subDocument);
 }
 
 void WP42ContentListener::_handleSubDocument(const WPXSubDocument *subDocument, WPXSubDocumentType /* subDocumentType */,
-                                             WPXTableList /* tableList */, unsigned /* nextTableIndice */)
+        WPXTableList /* tableList */, unsigned /* nextTableIndice */)
 {
 	// save our old parsing state on our "stack"
 	WP42ContentParsingState *oldParseState = m_parseState;

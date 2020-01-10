@@ -26,26 +26,27 @@
 #ifndef WP3WINDOWGROUP_H
 #define WP3WINDOWGROUP_H
 
-#include <librevenge/librevenge.h>
 #include "WP3VariableLengthGroup.h"
 #include "WP3SubDocument.h"
+#include "libwpd_types.h"
 #include <vector>
 
+class WPXInputStream;
 class WP3Listener;
 
 class WP3WindowGroup : public WP3VariableLengthGroup
 {
 public:
-	WP3WindowGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	WP3WindowGroup(WPXInputStream *input, WPXEncryption *encryption);
 	~WP3WindowGroup();
-	void _readContents(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	void _readContents(WPXInputStream *input, WPXEncryption *encryption);
 	void parse(WP3Listener *listener);
 
 private:
-	unsigned short m_figureFlags;
-	unsigned char m_leftColumn, m_rightColumn, m_boxType;
+	uint16_t m_figureFlags;
+	uint8_t m_leftColumn, m_rightColumn, m_boxType;
 	double m_width, m_height, m_horizontalOffset, m_verticalOffset;
-	unsigned m_resourceID;
+	uint32_t m_resourceID;
 	WP3SubDocument *m_subDocument, *m_caption;
 	// Unimplemented to prevent compiler from creating crasher ones
 	WP3WindowGroup(const WP3WindowGroup &);

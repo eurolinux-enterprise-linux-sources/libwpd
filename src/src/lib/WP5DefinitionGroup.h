@@ -32,30 +32,30 @@
 class WP5DefinitionGroup_DefineTablesSubGroup : public WP5VariableLengthGroup_SubGroup
 {
 public:
-	WP5DefinitionGroup_DefineTablesSubGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption, unsigned short subGroupSize);
+	WP5DefinitionGroup_DefineTablesSubGroup(WPXInputStream *input, WPXEncryption *encryption, uint16_t subGroupSize);
 	void parse(WP5Listener *listener);
 
 private:
-	unsigned char m_position;
-	unsigned short m_numColumns;
-	unsigned short m_leftOffset;
-	unsigned short m_leftGutter;
-	unsigned short m_rightGutter;
-	unsigned short m_columnWidth[32];
-	unsigned short m_attributeBits[32];
-	unsigned char m_columnAlignment[32];
+	uint8_t m_position;
+	uint16_t m_numColumns;
+	uint16_t m_leftOffset;
+	uint16_t m_leftGutter;
+	uint16_t m_rightGutter;
+	uint16_t m_columnWidth[32];
+	uint16_t m_attributeBits[32];
+	uint8_t m_columnAlignment[32];
 
 };
 
 class WP5DefinitionGroup : public WP5VariableLengthGroup
 {
 public:
-	WP5DefinitionGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	WP5DefinitionGroup(WPXInputStream *input, WPXEncryption *encryption);
 	~WP5DefinitionGroup();
 	void parse(WP5Listener *listener);
 
 protected:
-	virtual void _readContents(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	virtual void _readContents(WPXInputStream *input, WPXEncryption *encryption);
 
 private:
 	WP5DefinitionGroup(const WP5DefinitionGroup &);

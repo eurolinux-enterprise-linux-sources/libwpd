@@ -30,14 +30,12 @@
 #include "libwpd_internal.h"
 #include <limits>
 
-using namespace libwpd;
-
-WPDPasswordMatch WP1Heuristics::verifyPassword(librevenge::RVNGInputStream *input, const char *password)
+WPDPasswordMatch WP1Heuristics::verifyPassword(WPXInputStream *input, const char *password)
 {
 	if (!password)
 		return WPD_PASSWORD_MATCH_DONTKNOW;
 
-	input->seek(0, librevenge::RVNG_SEEK_SET);
+	input->seek(0, WPX_SEEK_SET);
 	WPXEncryption *encryption = 0;
 	try
 	{
@@ -67,9 +65,9 @@ WPDPasswordMatch WP1Heuristics::verifyPassword(librevenge::RVNGInputStream *inpu
 	}
 }
 
-WPDConfidence WP1Heuristics::isWP1FileFormat(librevenge::RVNGInputStream *input, const char *password)
+WPDConfidence WP1Heuristics::isWP1FileFormat(WPXInputStream *input, const char *password)
 {
-	input->seek(0, librevenge::RVNG_SEEK_SET);
+	input->seek(0, WPX_SEEK_SET);
 	WPXEncryption *encryption = 0;
 
 	try
@@ -93,34 +91,34 @@ WPDConfidence WP1Heuristics::isWP1FileFormat(librevenge::RVNGInputStream *input,
 			}
 		}
 
-		input->seek(0, librevenge::RVNG_SEEK_SET);
+		input->seek(0, WPX_SEEK_SET);
 		if (password && encryption)
-			input->seek(6, librevenge::RVNG_SEEK_SET);
+			input->seek(6, WPX_SEEK_SET);
 
 		int functionGroupCount = 0;
 
 		WPD_DEBUG_MSG(("WP1Heuristics::isWP1FileFormat()\n"));
 
-		while (!input->isEnd())
+		while (!input->atEOS())
 		{
-			unsigned char readVal = readU8(input, encryption);
+			uint8_t readVal = readU8(input, encryption);
 
 			WPD_DEBUG_MSG(("WP1Heuristics, Offset 0x%.8x, value 0x%.2x (%c)\n", (unsigned int)input->tell() - 1, readVal, readVal));
 
-			if (readVal < (unsigned char)0x20)
+			if (readVal < (uint8_t)0x20)
 			{
 				// line breaks et al, skip
 			}
-			else if (readVal >= (unsigned char)0x20 && readVal <= (unsigned char)0x7F)
+			else if (readVal >= (uint8_t)0x20 && readVal <= (uint8_t)0x7F)
 			{
 				// normal ASCII characters, skip
 			}
-			else if (readVal >= (unsigned char)0x80 && readVal <= (unsigned char)0xBF)
+			else if (readVal >= (uint8_t)0x80 && readVal <= (uint8_t)0xBF)
 			{
 				// single character function codes, skip
 				functionGroupCount++;
 			}
-			else if (readVal >= (unsigned char)0xFF)
+			else if (readVal >= (uint8_t)0xFF)
 			{
 				if (encryption)
 					delete encryption;
@@ -142,7 +140,7 @@ WPDConfidence WP1Heuristics::isWP1FileFormat(librevenge::RVNGInputStream *input,
 					//   that we observed in variable length WP1 functions
 
 					unsigned functionLength = readU32(input, encryption, true);
-					if (functionLength > ((std::numeric_limits<unsigned>::max)() / 2))
+					if (functionLength > ((std::numeric_limits<uint32_t>::max)() / 2))
 					{
 						if (encryption)
 							delete encryption;
@@ -156,7 +154,7 @@ WPDConfidence WP1Heuristics::isWP1FileFormat(librevenge::RVNGInputStream *input,
 					}
 					WPD_DEBUG_MSG(("WP1Heuristics functionLength = 0x%.8x\n", (unsigned int)functionLength));
 
-					input->seek(functionLength, librevenge::RVNG_SEEK_CUR);
+					input->seek(functionLength, WPX_SEEK_CUR);
 					unsigned long closingFunctionLength = readU32(input, encryption, true);
 					WPD_DEBUG_MSG(("WP1Heuristics closingFunctionLength = 0x%.8x\n", (unsigned int)closingFunctionLength));
 					if (functionLength != closingFunctionLength)
@@ -166,8 +164,8 @@ WPDConfidence WP1Heuristics::isWP1FileFormat(librevenge::RVNGInputStream *input,
 						return WPD_CONFIDENCE_NONE;
 					}
 
-					unsigned char closingGate = 0;
-					if (!input->isEnd())
+					uint8_t closingGate = 0;
+					if (!input->atEOS())
 					{
 						closingGate = readU8(input, encryption);
 						WPD_DEBUG_MSG(("WP1Heuristics closingGate = 0x%.2x\n", closingGate));
@@ -180,7 +178,7 @@ WPDConfidence WP1Heuristics::isWP1FileFormat(librevenge::RVNGInputStream *input,
 					}
 
 					// when passed the complete file, we don't allow for open groups when we've reached EOF
-					if (input->isEnd() && (closingGate != readVal))
+					if (input->atEOS() && (closingGate != readVal))
 					{
 						if (encryption)
 							delete encryption;
@@ -194,7 +192,7 @@ WPDConfidence WP1Heuristics::isWP1FileFormat(librevenge::RVNGInputStream *input,
 					// fixed length function group
 
 					// seek to the position where the closing gate should be
-					int res = input->seek(WP1_FUNCTION_GROUP_SIZE[readVal-0xC0]-2, librevenge::RVNG_SEEK_CUR);
+					int res = input->seek(WP1_FUNCTION_GROUP_SIZE[readVal-0xC0]-2, WPX_SEEK_CUR);
 					// when passed the complete file, we should be able to do that
 					if (res)
 					{
@@ -204,7 +202,7 @@ WPDConfidence WP1Heuristics::isWP1FileFormat(librevenge::RVNGInputStream *input,
 					}
 
 					// read the closing gate
-					unsigned char readNextVal = readU8(input, encryption);
+					uint8_t readNextVal = readU8(input, encryption);
 					if (readNextVal != readVal)
 					{
 						if (encryption)

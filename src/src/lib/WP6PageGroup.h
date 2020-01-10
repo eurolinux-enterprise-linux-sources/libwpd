@@ -32,34 +32,34 @@
 class WP6PageGroup : public WP6VariableLengthGroup
 {
 public:
-	WP6PageGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	WP6PageGroup(WPXInputStream *input, WPXEncryption *encryption);
 	~WP6PageGroup();
-	void _readContents(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	void _readContents(WPXInputStream *input, WPXEncryption *encryption);
 	void parse(WP6Listener *listener);
 
 private:
 	// variables needed for subgroup 0 and 1 (Left/Right Margin Set)
-	unsigned short m_margin;
+	uint16_t m_margin;
 	// variables needed for subgroup 2 (suppress page characteristics)
-	unsigned char m_suppressedCode;
+	uint8_t m_suppressedCode;
 	// variables needed for subgroup 3 (page number position)
-	unsigned short m_pageNumberTypefaceDesc;
-	unsigned char m_pageNumberUseFlag;
-	unsigned short m_pageNumberingFontPIDCopy;
-	unsigned short m_pageNumberPointSize;
-	unsigned char m_pageNumberPosition;
-	unsigned short m_pageNumberMatchedFontIndex;
-	unsigned short m_pageNumberMatchedFontPointSize;
-	unsigned short m_pageNumberAttributes1;
-	unsigned short m_pageNumberAttributes2;
+	uint16_t m_pageNumberTypefaceDesc;
+	uint8_t m_pageNumberUseFlag;
+	uint16_t m_pageNumberingFontPIDCopy;
+	uint16_t m_pageNumberPointSize;
+	uint8_t m_pageNumberPosition;
+	uint16_t m_pageNumberMatchedFontIndex;
+	uint16_t m_pageNumberMatchedFontPointSize;
+	uint16_t m_pageNumberAttributes1;
+	uint16_t m_pageNumberAttributes2;
 	RGBSColor m_pageNumberColor;
-	unsigned short m_pageNumberHeight;
-	unsigned char m_pageNumberNewPagePosition;
+	uint16_t m_pageNumberHeight;
+	uint8_t m_pageNumberNewPagePosition;
 
 	// variables needed for subgroup 0x11 (Form)
-	unsigned short m_formLength;
-	unsigned short m_formWidth;
-	unsigned char m_formType;
+	uint16_t m_formLength;
+	uint16_t m_formWidth;
+	uint8_t m_formType;
 	WPXFormOrientation m_formOrientation;
 
 };

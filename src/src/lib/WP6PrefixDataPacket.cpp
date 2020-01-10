@@ -41,12 +41,12 @@
 #include "WP6GraphicsCachedFileDataPacket.h"
 #include "libwpd_internal.h"
 
-WP6PrefixDataPacket::WP6PrefixDataPacket(librevenge::RVNGInputStream * /* input */, WPXEncryption * /* encryption */) :
+WP6PrefixDataPacket::WP6PrefixDataPacket(WPXInputStream * /* input */, WPXEncryption * /* encryption */) :
 	m_dataSize(0)
 {
 }
 
-WP6PrefixDataPacket *WP6PrefixDataPacket::constructPrefixDataPacket(librevenge::RVNGInputStream *input, WPXEncryption *encryption, WP6PrefixIndice *prefixIndice)
+WP6PrefixDataPacket *WP6PrefixDataPacket::constructPrefixDataPacket(WPXInputStream *input, WPXEncryption *encryption, WP6PrefixIndice *prefixIndice)
 {
 	WP6PrefixDataPacket *tmpPacket = 0;
 	try
@@ -55,7 +55,7 @@ WP6PrefixDataPacket *WP6PrefixDataPacket::constructPrefixDataPacket(librevenge::
 		{
 		case WP6_INDEX_HEADER_INITIAL_FONT:
 			tmpPacket = new WP6DefaultInitialFontPacket(input, encryption, prefixIndice->getID(),
-			                                            prefixIndice->getDataOffset(), prefixIndice->getDataSize());
+			        prefixIndice->getDataOffset(), prefixIndice->getDataSize());
 			break;
 		case WP6_INDEX_HEADER_GENERAL_WORDPERFECT_TEXT:
 			tmpPacket = new WP6GeneralTextPacket(input, encryption, prefixIndice->getID(),
@@ -71,7 +71,7 @@ WP6PrefixDataPacket *WP6PrefixDataPacket::constructPrefixDataPacket(librevenge::
 			break;
 		case WP6_INDEX_HEADER_EXTENDED_DOCUMENT_SUMMARY:
 			tmpPacket = new WP6ExtendedDocumentSummaryPacket(input, encryption, prefixIndice->getID(),
-			                                                 prefixIndice->getDataOffset(), prefixIndice->getDataSize());
+			        prefixIndice->getDataOffset(), prefixIndice->getDataSize());
 			break;
 		case WP6_INDEX_HEADER_OUTLINE_STYLE:
 			tmpPacket = new WP6OutlineStylePacket(input, encryption, prefixIndice->getID(),
@@ -79,15 +79,15 @@ WP6PrefixDataPacket *WP6PrefixDataPacket::constructPrefixDataPacket(librevenge::
 			break;
 		case WP6_INDEX_HEADER_GRAPHICS_FILENAME:
 			tmpPacket = new WP6GraphicsFilenamePacket(input, encryption, prefixIndice->getID(), prefixIndice->getFlags(),
-			                                          prefixIndice->getDataOffset(), prefixIndice->getDataSize());
+			        prefixIndice->getDataOffset(), prefixIndice->getDataSize());
 			break;
 		case WP6_INDEX_HEADER_GRAPHICS_CACHED_FILE_DATA:
 			tmpPacket = new WP6GraphicsCachedFileDataPacket(input, encryption, prefixIndice->getID(),
-			                                                prefixIndice->getDataOffset(), prefixIndice->getDataSize());
+			        prefixIndice->getDataOffset(), prefixIndice->getDataSize());
 			break;
 		case WP6_INDEX_HEADER_GRAPHICS_BOX_STYLE:
 			tmpPacket = new WP6GraphicsBoxStylePacket(input, encryption, prefixIndice->getID(),
-			                                          prefixIndice->getDataOffset(), prefixIndice->getDataSize());
+			        prefixIndice->getDataOffset(), prefixIndice->getDataSize());
 			break;
 		case WP6_INDEX_HEADER_TABLE_STYLE:
 			tmpPacket = new WP6TableStylePacket(input, encryption, prefixIndice->getID(),
@@ -95,7 +95,7 @@ WP6PrefixDataPacket *WP6PrefixDataPacket::constructPrefixDataPacket(librevenge::
 			break;
 		case WP6_INDEX_HEADER_COMMENT_ANNOTATION:
 			tmpPacket = new WP6CommentAnnotationPacket(input, encryption, prefixIndice->getID(),
-			                                           prefixIndice->getDataOffset(), prefixIndice->getDataSize());
+			        prefixIndice->getDataOffset(), prefixIndice->getDataSize());
 			break;
 		default:
 			break;;
@@ -110,14 +110,14 @@ WP6PrefixDataPacket *WP6PrefixDataPacket::constructPrefixDataPacket(librevenge::
 	return tmpPacket;
 }
 
-void WP6PrefixDataPacket::_read(librevenge::RVNGInputStream *input, WPXEncryption *encryption, unsigned dataOffset, unsigned dataSize)
+void WP6PrefixDataPacket::_read(WPXInputStream *input, WPXEncryption *encryption, uint32_t dataOffset, uint32_t dataSize)
 {
 	m_dataSize = dataSize;
 
 	if (!m_dataSize)
 		return;
 
-	input->seek(dataOffset, librevenge::RVNG_SEEK_SET);
+	input->seek(dataOffset, WPX_SEEK_SET);
 
 	_readContents(input, encryption);
 

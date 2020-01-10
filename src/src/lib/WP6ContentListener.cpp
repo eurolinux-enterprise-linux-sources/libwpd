@@ -45,31 +45,31 @@
 #define WP6_DEFAULT_FONT_SIZE 12.0
 #define WP6_DEFAULT_FONT_NAME "Times New Roman"
 
-WP6OutlineDefinition::WP6OutlineDefinition(const unsigned char *numberingMethods,
-                                           const unsigned char /* tabBehaviourFlag */)
+WP6OutlineDefinition::WP6OutlineDefinition(const WP6OutlineLocation outlineLocation, const uint8_t *numberingMethods,
+        const uint8_t /* tabBehaviourFlag */)
 {
-	_updateNumberingMethods(numberingMethods);
+	_updateNumberingMethods(outlineLocation, numberingMethods);
 }
 
 WP6OutlineDefinition::WP6OutlineDefinition()
 {
-	unsigned char numberingMethods[WP6_NUM_LIST_LEVELS];
+	uint8_t numberingMethods[WP6_NUM_LIST_LEVELS];
 	for (int i=0; i<WP6_NUM_LIST_LEVELS; i++)
 		numberingMethods[i] = WP6_INDEX_HEADER_OUTLINE_STYLE_ARABIC_NUMBERING;
 
-	_updateNumberingMethods(numberingMethods);
+	_updateNumberingMethods(paragraphGroup, numberingMethods);
 }
 
 // update: updates a partially made list definition (usual case where this is used: an
 // outline style is defined in a prefix packet, then you are given more information later
 // in the document)
 // FIXME: make sure this is in the right place
-void WP6OutlineDefinition::update(const unsigned char *numberingMethods, const unsigned char /* tabBehaviourFlag */)
+void WP6OutlineDefinition::update(const uint8_t *numberingMethods, const uint8_t /* tabBehaviourFlag */)
 {
-	_updateNumberingMethods(numberingMethods);
+	_updateNumberingMethods(paragraphGroup, numberingMethods);
 }
 
-void WP6OutlineDefinition::_updateNumberingMethods(const unsigned char *numberingMethods)
+void WP6OutlineDefinition::_updateNumberingMethods(const WP6OutlineLocation /* outlineLocation */, const uint8_t *numberingMethods)
 {
 	for (int i=0; i<WP6_NUM_LIST_LEVELS; i++)
 	{
@@ -90,8 +90,8 @@ void WP6OutlineDefinition::_updateNumberingMethods(const unsigned char *numberin
 		case WP6_INDEX_HEADER_OUTLINE_STYLE_UPPERCASE_ROMAN_NUMBERING:
 			m_listTypes[i] = UPPERCASE_ROMAN;
 			break;
-		//case WP6_INDEX_HEADER_OUTLINE_STYLE_LEADING_ZERO_ARABIC_NUMBERING:
-		//break;
+			//case WP6_INDEX_HEADER_OUTLINE_STYLE_LEADING_ZERO_ARABIC_NUMBERING:
+			//break;
 		default:
 			m_listTypes[i] = ARABIC;
 		}
@@ -152,24 +152,29 @@ _WP6ContentParsingState::~_WP6ContentParsingState()
 	// FIXME: erase current fontname
 }
 
-WP6ContentListener::WP6ContentListener(std::list<WPXPageSpan> &pageList, WPXTableList tableList, librevenge::RVNGTextInterface *documentInterface) :
+WP6ContentListener::WP6ContentListener(std::list<WPXPageSpan> &pageList, WPXTableList tableList, WPXDocumentInterface *documentInterface) :
 	WP6Listener(),
 	WPXContentListener(pageList, documentInterface),
 	m_parseState(new WP6ContentParsingState(tableList)),
-	m_outlineDefineHash(), m_listDefinitions()
+	m_outlineDefineHash()
 {
 }
 
 WP6ContentListener::~WP6ContentListener()
 {
+	typedef std::map<uint16_t, WP6OutlineDefinition *>::iterator Iter;
+	for (Iter outline = m_outlineDefineHash.begin(); outline != m_outlineDefineHash.end(); ++outline)
+	{
+		delete(outline->second);
+	}
 	delete m_parseState;
 }
 
-void WP6ContentListener::setDate(const unsigned short type, const unsigned short year,
-                                 const unsigned char month, const unsigned char day,
-                                 const unsigned char hour, const unsigned char minute,
-                                 const unsigned char second, const unsigned char dayOfWeek,
-                                 const unsigned char /* timeZone */, const unsigned char /* unused */)
+void WP6ContentListener::setDate(const uint16_t type, const uint16_t year,
+                                 const uint8_t month, const uint8_t day,
+                                 const uint8_t hour, const uint8_t minute,
+                                 const uint8_t second, const uint8_t dayOfWeek,
+                                 const uint8_t /* timeZone */, const uint8_t /* unused */)
 {
 #define DATEBUFLEN 100  // length of buffer allocated for strftime()
 #define WPMONDAYOFFSET  1       // WP week starts Monday, tm_wday on Sunday
@@ -184,7 +189,7 @@ void WP6ContentListener::setDate(const unsigned short type, const unsigned short
 	// seconds" format described at http://www.w3.org/TR/NOTE-datetime, i.e.
 	// YYYY-MM-DDThh:mm:ssTZD (eg 1997-07-16T19:20:30+01:00), but without TZD.
 	// WordPerfect does not use the timeZone field, so we don't know the offset
-	librevenge::RVNGString dateStr;      // filled in and passed to m_metaData.insert()
+	WPXString dateStr;      // filled in and passed to m_metaData.insert()
 
 	m_tm.tm_sec       = second;
 	m_tm.tm_min       = minute;
@@ -217,15 +222,15 @@ void WP6ContentListener::setDate(const unsigned short type, const unsigned short
 		m_metaData.insert("dcterms:available", dateStr);
 		break;
 	case (WP6_INDEX_HEADER_EXTENDED_DOCUMENT_SUMMARY_RECORDED_DATE):
-		m_metaData.insert("librevenge:recorded-date", dateStr);
+		m_metaData.insert("libwpd:recorded-date", dateStr);
 		break;
-	// NOTE: Revision Date is not set in WP Document Summary
-	// and sometimes contains non-zero data, so it's confusing.
-	// WordPerfect actually uses the file modification time
-	// to display Revision Date in Properties.
-	//case (WP6_INDEX_HEADER_EXTENDED_DOCUMENT_SUMMARY_REVISION_DATE):
-	//	m_metaData.insert("librevenge:revision-date", dateStr);
-	//	break;
+		// NOTE: Revision Date is not set in WP Document Summary
+		// and sometimes contains non-zero data, so it's confusing.
+		// WordPerfect actually uses the file modification time
+		// to display Revision Date in Properties.
+		//case (WP6_INDEX_HEADER_EXTENDED_DOCUMENT_SUMMARY_REVISION_DATE):
+		//	m_metaData.insert("libwpd:revision-date", dateStr);
+		//	break;
 	case (WP6_INDEX_HEADER_EXTENDED_DOCUMENT_SUMMARY_VERSION_DATE):
 		m_metaData.insert("dcterms:issued", dateStr);
 		break;
@@ -234,7 +239,7 @@ void WP6ContentListener::setDate(const unsigned short type, const unsigned short
 	}
 }
 
-void WP6ContentListener::setExtendedInformation(const unsigned short type, const librevenge::RVNGString &data)
+void WP6ContentListener::setExtendedInformation(const uint16_t type, const WPXString &data)
 {
 	switch (type)
 	{
@@ -260,128 +265,128 @@ void WP6ContentListener::setExtendedInformation(const unsigned short type, const
 		m_metaData.insert("dc:description", data);
 		break;
 	case (WP6_INDEX_HEADER_EXTENDED_DOCUMENT_SUMMARY_DESCRIPTIVE_NAME):
-		m_metaData.insert("librevenge:descriptive-name", data);
+		m_metaData.insert("libwpd:descriptive-name", data);
 		break;
 	case (WP6_INDEX_HEADER_EXTENDED_DOCUMENT_SUMMARY_DESCRIPTIVE_TYPE):
-		m_metaData.insert("librevenge:descriptive-type", data);
+		m_metaData.insert("libwpd:descriptive-type", data);
 		break;
 	case (WP6_INDEX_HEADER_EXTENDED_DOCUMENT_SUMMARY_ACCOUNT):
-		m_metaData.insert("librevenge:account", data);
+		m_metaData.insert("libwpd:account", data);
 		break;
 	case (WP6_INDEX_HEADER_EXTENDED_DOCUMENT_SUMMARY_ADDRESS):
-		m_metaData.insert("librevenge:address", data);
+		m_metaData.insert("libwpd:address", data);
 		break;
 	case (WP6_INDEX_HEADER_EXTENDED_DOCUMENT_SUMMARY_ATTACHMENTS):
-		m_metaData.insert("librevenge:attachments", data);
+		m_metaData.insert("libwpd:attachments", data);
 		break;
 	case (WP6_INDEX_HEADER_EXTENDED_DOCUMENT_SUMMARY_AUTHORIZATION):
-		m_metaData.insert("librevenge:authorization", data);
+		m_metaData.insert("libwpd:authorization", data);
 		break;
 	case (WP6_INDEX_HEADER_EXTENDED_DOCUMENT_SUMMARY_BILL_TO):
-		m_metaData.insert("librevenge:bill-to", data);
+		m_metaData.insert("libwpd:bill-to", data);
 		break;
 	case (WP6_INDEX_HEADER_EXTENDED_DOCUMENT_SUMMARY_BLIND_COPY):
-		m_metaData.insert("librevenge:blind-copy", data);
+		m_metaData.insert("libwpd:blind-copy", data);
 		break;
 	case (WP6_INDEX_HEADER_EXTENDED_DOCUMENT_SUMMARY_CARBON_COPY):
-		m_metaData.insert("librevenge:carbon-copy", data);
+		m_metaData.insert("libwpd:carbon-copy", data);
 		break;
 	case (WP6_INDEX_HEADER_EXTENDED_DOCUMENT_SUMMARY_CHECKED_BY):
-		m_metaData.insert("librevenge:checked-by", data);
+		m_metaData.insert("libwpd:checked-by", data);
 		break;
 	case (WP6_INDEX_HEADER_EXTENDED_DOCUMENT_SUMMARY_CLIENT):
-		m_metaData.insert("librevenge:client", data);
+		m_metaData.insert("libwpd:client", data);
 		break;
 	case (WP6_INDEX_HEADER_EXTENDED_DOCUMENT_SUMMARY_COMMENTS):
-		m_metaData.insert("librevenge:comments", data);
+		m_metaData.insert("libwpd:comments", data);
 		break;
 	case (WP6_INDEX_HEADER_EXTENDED_DOCUMENT_SUMMARY_DEPARTMENT):
-		m_metaData.insert("librevenge:department", data);
+		m_metaData.insert("libwpd:department", data);
 		break;
 	case (WP6_INDEX_HEADER_EXTENDED_DOCUMENT_SUMMARY_DESTINATION):
-		m_metaData.insert("librevenge:destination", data);
+		m_metaData.insert("libwpd:destination", data);
 		break;
 	case (WP6_INDEX_HEADER_EXTENDED_DOCUMENT_SUMMARY_DISPOSITION):
-		m_metaData.insert("librevenge:disposition", data);
+		m_metaData.insert("libwpd:disposition", data);
 		break;
 	case (WP6_INDEX_HEADER_EXTENDED_DOCUMENT_SUMMARY_DIVISION):
-		m_metaData.insert("librevenge:division", data);
+		m_metaData.insert("libwpd:division", data);
 		break;
 	case (WP6_INDEX_HEADER_EXTENDED_DOCUMENT_SUMMARY_DOCUMENT_NUMBER):
-		m_metaData.insert("librevenge:document-number", data);
+		m_metaData.insert("libwpd:document-number", data);
 		break;
 	case (WP6_INDEX_HEADER_EXTENDED_DOCUMENT_SUMMARY_EDITOR):
-		m_metaData.insert("librevenge:editor", data);
+		m_metaData.insert("libwpd:editor", data);
 		break;
 	case (WP6_INDEX_HEADER_EXTENDED_DOCUMENT_SUMMARY_FORWARD_TO):
-		m_metaData.insert("librevenge:forward-to", data);
+		m_metaData.insert("libwpd:forward-to", data);
 		break;
 	case (WP6_INDEX_HEADER_EXTENDED_DOCUMENT_SUMMARY_GROUP):
-		m_metaData.insert("librevenge:group", data);
+		m_metaData.insert("libwpd:group", data);
 		break;
 	case (WP6_INDEX_HEADER_EXTENDED_DOCUMENT_SUMMARY_MAIL_STOP):
-		m_metaData.insert("librevenge:mail-stop", data);
+		m_metaData.insert("libwpd:mail-stop", data);
 		break;
 	case (WP6_INDEX_HEADER_EXTENDED_DOCUMENT_SUMMARY_MATTER):
-		m_metaData.insert("librevenge:matter", data);
+		m_metaData.insert("libwpd:matter", data);
 		break;
 	case (WP6_INDEX_HEADER_EXTENDED_DOCUMENT_SUMMARY_OFFICE):
-		m_metaData.insert("librevenge:office", data);
+		m_metaData.insert("libwpd:office", data);
 		break;
 	case (WP6_INDEX_HEADER_EXTENDED_DOCUMENT_SUMMARY_OWNER):
-		m_metaData.insert("librevenge:owner", data);
+		m_metaData.insert("libwpd:owner", data);
 		break;
 	case (WP6_INDEX_HEADER_EXTENDED_DOCUMENT_SUMMARY_PROJECT):
-		m_metaData.insert("librevenge:project", data);
+		m_metaData.insert("libwpd:project", data);
 		break;
 	case (WP6_INDEX_HEADER_EXTENDED_DOCUMENT_SUMMARY_PURPOSE):
-		m_metaData.insert("librevenge:purpose", data);
+		m_metaData.insert("libwpd:purpose", data);
 		break;
 	case (WP6_INDEX_HEADER_EXTENDED_DOCUMENT_SUMMARY_RECEIVED_FROM):
-		m_metaData.insert("librevenge:received-from", data);
+		m_metaData.insert("libwpd:received-from", data);
 		break;
 	case (WP6_INDEX_HEADER_EXTENDED_DOCUMENT_SUMMARY_RECORDED_BY):
-		m_metaData.insert("librevenge:recorded-by", data);
+		m_metaData.insert("libwpd:recorded-by", data);
 		break;
 	case (WP6_INDEX_HEADER_EXTENDED_DOCUMENT_SUMMARY_REFERENCE):
-		m_metaData.insert("librevenge:reference", data);
+		m_metaData.insert("libwpd:reference", data);
 		break;
 	case (WP6_INDEX_HEADER_EXTENDED_DOCUMENT_SUMMARY_REVISION_NOTES):
-		m_metaData.insert("librevenge:revision-notes", data);
+		m_metaData.insert("libwpd:revision-notes", data);
 		break;
 	case (WP6_INDEX_HEADER_EXTENDED_DOCUMENT_SUMMARY_REVISION_NUMBER):
-		m_metaData.insert("librevenge:revision-number", data);
+		m_metaData.insert("libwpd:revision-number", data);
 		break;
 	case (WP6_INDEX_HEADER_EXTENDED_DOCUMENT_SUMMARY_SECTION):
-		m_metaData.insert("librevenge:section", data);
+		m_metaData.insert("libwpd:section", data);
 		break;
 	case (WP6_INDEX_HEADER_EXTENDED_DOCUMENT_SUMMARY_SECURITY):
-		m_metaData.insert("librevenge:security", data);
+		m_metaData.insert("libwpd:security", data);
 		break;
 	case (WP6_INDEX_HEADER_EXTENDED_DOCUMENT_SUMMARY_SOURCE):
 		m_metaData.insert("dc:source", data);
 		break;
 	case (WP6_INDEX_HEADER_EXTENDED_DOCUMENT_SUMMARY_STATUS):
-		m_metaData.insert("librevenge:status", data);
+		m_metaData.insert("libwpd:status", data);
 		break;
 	case (WP6_INDEX_HEADER_EXTENDED_DOCUMENT_SUMMARY_TELEPHONE_NUMBER):
-		m_metaData.insert("librevenge:telephone-number", data);
+		m_metaData.insert("libwpd:telephone-number", data);
 		break;
 	case (WP6_INDEX_HEADER_EXTENDED_DOCUMENT_SUMMARY_TYPIST):
 		m_metaData.insert("dc:creator", data);
 		break;
 	case (WP6_INDEX_HEADER_EXTENDED_DOCUMENT_SUMMARY_VERSION_NOTES):
-		m_metaData.insert("librevenge:version-notes", data);
+		m_metaData.insert("libwpd:version-notes", data);
 		break;
 	case (WP6_INDEX_HEADER_EXTENDED_DOCUMENT_SUMMARY_VERSION_NUMBER):
-		m_metaData.insert("librevenge:version-number", data);
+		m_metaData.insert("libwpd:version-number", data);
 		break;
 	default:
 		break;
 	}
 }
 
-void WP6ContentListener::setAlignmentCharacter(const unsigned character)
+void WP6ContentListener::setAlignmentCharacter(const uint32_t character)
 {
 	if (!isUndoOn())
 	{
@@ -389,7 +394,7 @@ void WP6ContentListener::setAlignmentCharacter(const unsigned character)
 	}
 }
 
-void WP6ContentListener::setLeaderCharacter(const unsigned character, const unsigned char numSpaces)
+void WP6ContentListener::setLeaderCharacter(const uint32_t character, const uint8_t numSpaces)
 {
 	assert(m_ps->m_tabStops.size() == m_parseState->m_tempUsePreWP9LeaderMethod.size());
 
@@ -409,11 +414,11 @@ void WP6ContentListener::setLeaderCharacter(const unsigned character, const unsi
 	}
 }
 
-void WP6ContentListener::insertCharacter(unsigned character)
+void WP6ContentListener::insertCharacter(uint32_t character)
 {
 	if (!isUndoOn())
 	{
-		unsigned tmpCharacter = _mapNonUnicodeCharacter(character);
+		uint32_t tmpCharacter = _mapNonUnicodeCharacter(character);
 
 		if (m_parseState->m_styleStateSequence.getCurrentState() == STYLE_BODY ||
 		        m_parseState->m_styleStateSequence.getCurrentState() == NORMAL)
@@ -471,7 +476,7 @@ void WP6ContentListener::defineTabStops(const bool isRelative, const std::vector
 }
 
 
-void WP6ContentListener::insertTab(const unsigned char tabType, double tabPosition)
+void WP6ContentListener::insertTab(const uint8_t tabType, double tabPosition)
 {
 	bool tmpHasTabPositionInformation = true;
 	if (tabPosition >= (double)((double)0xFFFE/(double)WPX_NUM_WPUS_PER_INCH))
@@ -489,11 +494,11 @@ void WP6ContentListener::insertTab(const unsigned char tabType, double tabPositi
 			{
 			case WP6_TAB_GROUP_TABLE_TAB:
 			case WP6_TAB_GROUP_BAR_TAB:
-			// Uncomment when the TabGroup is properly implemented
-			//case WP6_TAB_GROUP_CENTER_ON_MARGINS:
-			//case WP6_TAB_GROUP_CENTER_ON_CURRENT_POSITION:
+				// Uncomment when the TabGroup is properly implemented
+				//case WP6_TAB_GROUP_CENTER_ON_MARGINS:
+				//case WP6_TAB_GROUP_CENTER_ON_CURRENT_POSITION:
 			case WP6_TAB_GROUP_CENTER_TAB:
-			//case WP6_TAB_GROUP_FLUSH_RIGHT:
+				//case WP6_TAB_GROUP_FLUSH_RIGHT:
 			case WP6_TAB_GROUP_RIGHT_TAB:
 			case WP6_TAB_GROUP_DECIMAL_TAB:
 				if (!m_ps->m_isParagraphOpened && !m_ps->m_isListElementOpened)
@@ -515,7 +520,7 @@ void WP6ContentListener::insertTab(const unsigned char tabType, double tabPositi
 		{
 			switch ((tabType & 0xF8) >> 3)
 			{
-			// Begin of code to be removed when the TabGroup is properly implemented
+				// Begin of code to be removed when the TabGroup is properly implemented
 			case WP6_TAB_GROUP_CENTER_ON_MARGINS:
 			case WP6_TAB_GROUP_CENTER_ON_CURRENT_POSITION:
 				m_ps->m_tempParagraphJustification = WPX_PARAGRAPH_JUSTIFICATION_CENTER;
@@ -524,7 +529,7 @@ void WP6ContentListener::insertTab(const unsigned char tabType, double tabPositi
 			case WP6_TAB_GROUP_FLUSH_RIGHT:
 				m_ps->m_tempParagraphJustification = WPX_PARAGRAPH_JUSTIFICATION_RIGHT;
 				break;
-			// End of code to be removed when the TabGroup is properly implemented
+				// End of code to be removed when the TabGroup is properly implemented
 
 			case WP6_TAB_GROUP_LEFT_TAB: // converted as first line indent
 #if 0
@@ -634,7 +639,7 @@ void WP6ContentListener::insertTab(const unsigned char tabType, double tabPositi
 
 void WP6ContentListener::handleLineBreak()
 {
-	if (!isUndoOn())
+	if(!isUndoOn())
 	{
 		if (m_parseState->m_styleStateSequence.getCurrentState() == STYLE_BODY ||
 		        m_parseState->m_styleStateSequence.getCurrentState() == NORMAL)
@@ -665,7 +670,7 @@ void WP6ContentListener::insertEOL()
 
 }
 
-void WP6ContentListener::characterColorChange(const unsigned char red, const unsigned char green, const unsigned char blue)
+void WP6ContentListener::characterColorChange(const uint8_t red, const uint8_t green, const uint8_t blue)
 {
 	if (!isUndoOn())
 	{
@@ -676,7 +681,7 @@ void WP6ContentListener::characterColorChange(const unsigned char red, const uns
 	}
 }
 
-void WP6ContentListener::characterShadingChange(const unsigned char shading)
+void WP6ContentListener::characterShadingChange(const uint8_t shading)
 {
 	if (!isUndoOn())
 	{
@@ -697,7 +702,7 @@ void WP6ContentListener::highlightChange(const bool isOn, const RGBSColor &color
 	}
 }
 
-void WP6ContentListener::fontChange(const unsigned short matchedFontPointSize, const unsigned short fontPID, const librevenge::RVNGString &fontName)
+void WP6ContentListener::fontChange(const uint16_t matchedFontPointSize, const uint16_t fontPID, const WPXString &fontName)
 {
 	if (!isUndoOn())
 	{
@@ -713,22 +718,22 @@ void WP6ContentListener::fontChange(const unsigned short matchedFontPointSize, c
 		}
 		if (fontPID)
 		{
-			librevenge::RVNGString pidFontName = WP6Listener::getFontNameForPID(fontPID);
-			if (!pidFontName.empty())
+			WPXString pidFontName = WP6Listener::getFontNameForPID(fontPID);
+			if (!!pidFontName)
 				*(m_ps->m_fontName) = pidFontName;
 		}
-		else if (!fontName.empty())
+		else if (fontName.len())
 			*(m_ps->m_fontName) = fontName;
 	}
 }
 
-void WP6ContentListener::attributeChange(const bool isOn, const unsigned char attribute)
+void WP6ContentListener::attributeChange(const bool isOn, const uint8_t attribute)
 {
 	if (!isUndoOn())
 	{
 		_closeSpan();
 
-		unsigned textAttributeBit = 0;
+		uint32_t textAttributeBit = 0;
 
 		// FIXME: handle all the possible attribute bits
 		switch (attribute)
@@ -811,13 +816,13 @@ void WP6ContentListener::spacingAfterParagraphChange(const double spacingRelativ
 	}
 }
 
-void WP6ContentListener::marginChange(unsigned char side, unsigned short margin)
+void WP6ContentListener::marginChange(uint8_t side, uint16_t margin)
 {
 	if (!isUndoOn())
 	{
 		double marginInch = (double)((double)margin/ (double)WPX_NUM_WPUS_PER_INCH);
 
-		switch (side)
+		switch(side)
 		{
 		case WPX_LEFT:
 			if (m_ps->m_numColumns > 1)
@@ -858,7 +863,7 @@ void WP6ContentListener::marginChange(unsigned char side, unsigned short margin)
 	}
 }
 
-void WP6ContentListener::paragraphMarginChange(unsigned char side, signed short margin)
+void WP6ContentListener::paragraphMarginChange(uint8_t side, int16_t margin)
 {
 	if (!isUndoOn())
 	{
@@ -873,7 +878,7 @@ void WP6ContentListener::paragraphMarginChange(unsigned char side, signed short 
 		m_ps->m_currentListLevel = 0;
 
 		double marginInch = (double)((double)margin / (double)WPX_NUM_WPUS_PER_INCH);
-		switch (side)
+		switch(side)
 		{
 		case WPX_LEFT:
 			// This is necessary in case we have Margin Set and Left or LeftRight indentation
@@ -900,7 +905,7 @@ void WP6ContentListener::paragraphMarginChange(unsigned char side, signed short 
 	}
 }
 
-void WP6ContentListener::indentFirstLineChange(signed short offset)
+void WP6ContentListener::indentFirstLineChange(int16_t offset)
 {
 	if (!isUndoOn())
 	{
@@ -917,7 +922,7 @@ void WP6ContentListener::indentFirstLineChange(signed short offset)
 	}
 }
 
-void WP6ContentListener::columnChange(const WPXTextColumnType /* columnType */, const unsigned char numColumns,
+void WP6ContentListener::columnChange(const WPXTextColumnType /* columnType */, const uint8_t numColumns,
                                       const std::vector<double> &columnWidth, const std::vector<bool> &isFixedWidth)
 {
 	if (!isUndoOn())
@@ -995,19 +1000,29 @@ void WP6ContentListener::columnChange(const WPXTextColumnType /* columnType */, 
 	}
 }
 
-void WP6ContentListener::updateOutlineDefinition(const unsigned short outlineHash, const unsigned char *numberingMethods, const unsigned char tabBehaviourFlag)
+void WP6ContentListener::updateOutlineDefinition(const WP6OutlineLocation outlineLocation, const uint16_t outlineHash,
+        const uint8_t *numberingMethods, const uint8_t tabBehaviourFlag)
 {
 	WPD_DEBUG_MSG(("WordPerfect: Updating OutlineHash %i\n", outlineHash));
 
-	WP6OutlineDefinition *tempOutlineDefinition = &m_outlineDefineHash[outlineHash];
-	tempOutlineDefinition->update(numberingMethods, tabBehaviourFlag);
+	WP6OutlineDefinition *tempOutlineDefinition;
+	if (m_outlineDefineHash.find(outlineHash) != m_outlineDefineHash.end())
+	{
+		tempOutlineDefinition = (m_outlineDefineHash.find(outlineHash))->second;
+		tempOutlineDefinition->update(numberingMethods, tabBehaviourFlag);
+	}
+	else
+	{
+		tempOutlineDefinition = new WP6OutlineDefinition(outlineLocation, numberingMethods, tabBehaviourFlag);
+		m_outlineDefineHash[outlineHash] = tempOutlineDefinition;
+	}
 }
 
-void WP6ContentListener::paragraphNumberOn(const unsigned short outlineHash, const unsigned char level, const unsigned char /* flag */)
+void WP6ContentListener::paragraphNumberOn(const uint16_t outlineHash, const uint8_t level, const uint8_t /* flag */)
 {
 	if (!isUndoOn())
 	{
-		_paragraphNumberOn(outlineHash, (unsigned char)(level + 1));
+		_paragraphNumberOn(outlineHash, (uint8_t)(level + 1));
 	}
 }
 
@@ -1025,7 +1040,7 @@ void WP6ContentListener::paragraphNumberOff()
 	}
 }
 
-void WP6ContentListener::displayNumberReferenceGroupOn(const unsigned char subGroup, const unsigned char /* level */)
+void WP6ContentListener::displayNumberReferenceGroupOn(const uint8_t subGroup, const uint8_t /* level */)
 {
 	if (!isUndoOn())
 	{
@@ -1065,7 +1080,7 @@ void WP6ContentListener::displayNumberReferenceGroupOn(const unsigned char subGr
 	}
 }
 
-void WP6ContentListener::displayNumberReferenceGroupOff(const unsigned char subGroup)
+void WP6ContentListener::displayNumberReferenceGroupOff(const uint8_t subGroup)
 {
 	if (!isUndoOn())
 	{
@@ -1100,18 +1115,16 @@ void WP6ContentListener::displayNumberReferenceGroupOff(const unsigned char subG
 			// in theory the page numbering type should only apply to thepage number itself, however, I can't think of a case where you'd
 			// want the total num of pages to be in a different format plus I don't see a way of changing that. so...
 			{
-				librevenge::RVNGPropertyList propList;
+				WPXPropertyList propList;
 				propList.insert("style:num-format", _numberingTypeToString(m_parseState->m_currentPageNumberingType));
 
 				if (subGroup == WP6_DISPLAY_NUMBER_REFERENCE_GROUP_PAGE_NUMBER_DISPLAY_OFF)
 				{
-					propList.insert("librevenge:field-type", "text:page-number");
-					m_documentInterface->insertField(propList);
+					m_documentInterface->insertField(WPXString("text:page-number"), propList);
 				}
 				else // WP6_DISPLAY_NUMBER_REFERENCE_GROUP_TOTAL_NUMBER_OF_PAGES_DISPLAY_OFF
 				{
-					propList.insert("librevenge:field-type", "text:page-count");
-					m_documentInterface->insertField(propList);
+					m_documentInterface->insertField(WPXString("text:page-count"), propList);
 				}
 			}
 			m_parseState->m_styleStateSequence.setCurrentState(m_parseState->m_styleStateSequence.getPreviousState());
@@ -1122,7 +1135,7 @@ void WP6ContentListener::displayNumberReferenceGroupOff(const unsigned char subG
 	}
 }
 
-void WP6ContentListener::styleGroupOn(const unsigned char subGroup)
+void WP6ContentListener::styleGroupOn(const uint8_t subGroup)
 {
 	if (!isUndoOn())
 	{
@@ -1157,7 +1170,7 @@ void WP6ContentListener::styleGroupOn(const unsigned char subGroup)
 	}
 }
 
-void WP6ContentListener::styleGroupOff(const unsigned char subGroup)
+void WP6ContentListener::styleGroupOff(const uint8_t subGroup)
 {
 	if (!isUndoOn())
 	{
@@ -1181,7 +1194,7 @@ void WP6ContentListener::styleGroupOff(const unsigned char subGroup)
 	}
 }
 
-void WP6ContentListener::globalOn(const unsigned char systemStyle)
+void WP6ContentListener::globalOn(const uint8_t systemStyle)
 {
 	if (!isUndoOn())
 	{
@@ -1199,7 +1212,7 @@ void WP6ContentListener::globalOff()
 	}
 }
 
-void WP6ContentListener::noteOn(const unsigned short textPID)
+void WP6ContentListener::noteOn(const uint16_t textPID)
 {
 	if (!isUndoOn())
 	{
@@ -1239,16 +1252,16 @@ void WP6ContentListener::noteOff(const WPXNoteType noteType)
 		int number = _extractDisplayReferenceNumberFromBuf(m_parseState->m_numberText, numberingType);
 		m_parseState->m_numberText.clear(); // we do not need the text version of the number anymore
 
-		librevenge::RVNGPropertyList propList;
+		WPXPropertyList propList;
 		if (number)
-			propList.insert("librevenge:number", number);
+			propList.insert("libwpd:number", number);
 
 		if (noteType == FOOTNOTE)
 			m_documentInterface->openFootnote(propList);
 		else
 			m_documentInterface->openEndnote(propList);
 
-		unsigned short textPID = (unsigned short)m_parseState->m_noteTextPID;
+		uint16_t textPID = (uint16_t)m_parseState->m_noteTextPID;
 		handleSubDocument(((textPID && WP6Listener::getPrefixDataPacket(textPID)) ? WP6Listener::getPrefixDataPacket(textPID)->getSubDocument() : 0),
 		                  WPX_SUBDOCUMENT_NOTE, m_parseState->m_tableList, m_parseState->m_nextTableIndice);
 
@@ -1269,7 +1282,7 @@ void WP6ContentListener::setPageNumberingType(const WPXNumberingType pageNumberi
 	}
 }
 
-void WP6ContentListener::defineTable(const unsigned char position, const unsigned short leftOffset)
+void WP6ContentListener::defineTable(const uint8_t position, const uint16_t leftOffset)
 {
 	if (!isUndoOn())
 	{
@@ -1319,8 +1332,8 @@ void WP6ContentListener::defineTable(const unsigned char position, const unsigne
 	}
 }
 
-void WP6ContentListener::addTableColumnDefinition(const unsigned width, const unsigned /* leftGutter */,
-                                                  const unsigned /* rightGutter */, const unsigned attributes, const unsigned char alignment)
+void WP6ContentListener::addTableColumnDefinition(const uint32_t width, const uint32_t /* leftGutter */,
+        const uint32_t /* rightGutter */, const uint32_t attributes, const uint8_t alignment)
 {
 	if (!isUndoOn())
 	{
@@ -1371,7 +1384,7 @@ void WP6ContentListener::startTable()
 	}
 }
 
-void WP6ContentListener::insertRow(const unsigned short rowHeight, const bool isMinimumHeight, const bool isHeaderRow)
+void WP6ContentListener::insertRow(const uint16_t rowHeight, const bool isMinimumHeight, const bool isHeaderRow)
 {
 	if (!isUndoOn() && m_ps->m_isTableOpened)
 	{
@@ -1381,10 +1394,10 @@ void WP6ContentListener::insertRow(const unsigned short rowHeight, const bool is
 	}
 }
 
-void WP6ContentListener::insertCell(const unsigned char colSpan, const unsigned char rowSpan, const unsigned char /* borderBits */,
+void WP6ContentListener::insertCell(const uint8_t colSpan, const uint8_t rowSpan, const uint8_t /* borderBits */,
                                     const RGBSColor *cellFgColor, const RGBSColor *cellBgColor,
                                     const RGBSColor *cellBorderColor, const WPXVerticalAlignment cellVerticalAlignment,
-                                    const bool useCellAttributes, const unsigned cellAttributes)
+                                    const bool useCellAttributes, const uint32_t cellAttributes)
 {
 	if (!isUndoOn() && m_ps->m_isTableOpened)
 	{
@@ -1415,7 +1428,7 @@ void WP6ContentListener::insertCell(const unsigned char colSpan, const unsigned 
 		_flushText();
 
 		_openTableCell(colSpan, rowSpan, m_parseState->m_currentTable->getCell((unsigned)m_ps->m_currentTableRow,
-		                                                                       (unsigned)m_ps->m_currentTableCellNumberInRow)->m_borderBits, cellFgColor, cellBgColor,
+		               (unsigned)m_ps->m_currentTableCellNumberInRow)->m_borderBits, cellFgColor, cellBgColor,
 		               cellBorderColor, cellVerticalAlignment);
 
 		m_ps->m_cellAttributeBits = 0;
@@ -1441,10 +1454,10 @@ void WP6ContentListener::endTable()
 	}
 }
 
-void WP6ContentListener::boxOn(const unsigned char /* anchoringType */, const unsigned char generalPositioningFlags, const unsigned char horizontalPositioningFlags,
-                               const signed short horizontalOffset, const unsigned char /* leftColumn */, const unsigned char /* rightColumn */, const unsigned char verticalPositioningFlags,
-                               const signed short verticalOffset, const unsigned char widthFlags, const unsigned short width, const unsigned char heightFlags, const unsigned short height,
-                               const unsigned char boxContentType, const unsigned short nativeWidth, const unsigned short nativeHeight)
+void WP6ContentListener::boxOn(const uint8_t /* anchoringType */, const uint8_t generalPositioningFlags, const uint8_t horizontalPositioningFlags,
+                               const int16_t horizontalOffset, const uint8_t /* leftColumn */, const uint8_t /* rightColumn */, const uint8_t verticalPositioningFlags,
+                               const int16_t verticalOffset, const uint8_t widthFlags, const uint16_t width, const uint8_t heightFlags, const uint16_t height,
+                               const uint8_t boxContentType, const uint16_t nativeWidth, const uint16_t nativeHeight)
 {
 	if (isUndoOn() || (m_ps->m_isTableOpened && !m_ps->m_isTableCellOpened))
 		return;
@@ -1454,7 +1467,7 @@ void WP6ContentListener::boxOn(const unsigned char /* anchoringType */, const un
 	else
 		_flushText();
 
-	librevenge::RVNGPropertyList propList;
+	WPXPropertyList propList;
 
 	if (heightFlags & 0x01)
 		propList.insert("style:rel-height", "scale");
@@ -1646,7 +1659,7 @@ void WP6ContentListener::boxOn(const unsigned char /* anchoringType */, const un
 			propList.insert("style:vertical-rel", "paragraph");
 		else if ((generalPositioningFlags & 0x03) == 0x02)
 			propList.insert("style:vertical-rel", "baseline");
-		switch ((verticalPositioningFlags & 0x1C) >> 2)
+		switch((verticalPositioningFlags & 0x1C) >> 2)
 		{
 		case 0x00:
 		case 0x03:
@@ -1682,20 +1695,17 @@ void WP6ContentListener::boxOff()
 	}
 }
 
-void WP6ContentListener::insertGraphicsData(const unsigned short packetId)
+void WP6ContentListener::insertGraphicsData(const uint16_t packetId)
 {
 	if (isUndoOn() || !m_parseState->m_isFrameOpened)
 		return;
 
 	if (const WP6GraphicsCachedFileDataPacket *gcfdPacket = dynamic_cast<const WP6GraphicsCachedFileDataPacket *>(this->getPrefixDataPacket(packetId)))
 	{
-		librevenge::RVNGPropertyList propList;
-		propList.insert("librevenge:mime-type", "image/x-wpg");
+		WPXPropertyList propList;
+		propList.insert("libwpd:mimetype", "image/x-wpg");
 		if (gcfdPacket->getBinaryObject())
-		{
-			propList.insert("office:binary-data", *(gcfdPacket->getBinaryObject()));
-			m_documentInterface->insertBinaryObject(propList);
-		}
+			m_documentInterface->insertBinaryObject(propList, *(gcfdPacket->getBinaryObject()));
 	}
 }
 
@@ -1703,7 +1713,7 @@ void WP6ContentListener::insertTextBox(const WP6SubDocument *subDocument)
 {
 	if (!isUndoOn() && subDocument && m_parseState->m_isFrameOpened)
 	{
-		librevenge::RVNGPropertyList propList;
+		WPXPropertyList propList;
 		m_documentInterface->openTextBox(propList);
 
 		// Positioned objects like text boxes are special beasts. They can contain all hierarchical elements up
@@ -1715,7 +1725,7 @@ void WP6ContentListener::insertTextBox(const WP6SubDocument *subDocument)
 }
 
 
-void WP6ContentListener::commentAnnotation(const unsigned short textPID)
+void WP6ContentListener::commentAnnotation(const uint16_t textPID)
 {
 	if (!isUndoOn())
 	{
@@ -1727,7 +1737,7 @@ void WP6ContentListener::commentAnnotation(const unsigned short textPID)
 			_closeSpan();
 		}
 
-		librevenge::RVNGPropertyList propList;
+		WPXPropertyList propList;
 		m_documentInterface->openComment(propList);
 
 		m_ps->m_isNote = true;
@@ -1742,7 +1752,7 @@ void WP6ContentListener::commentAnnotation(const unsigned short textPID)
 }
 
 void WP6ContentListener::_handleSubDocument(const WPXSubDocument *subDocument, WPXSubDocumentType subDocumentType,
-                                            WPXTableList tableList, unsigned nextTableIndice)
+        WPXTableList tableList, unsigned nextTableIndice)
 {
 	// save our old parsing state on our "stack"
 	WP6ContentParsingState *oldParseState = m_parseState;
@@ -1789,7 +1799,7 @@ void WP6ContentListener::_handleSubDocument(const WPXSubDocument *subDocument, W
 	m_parseState->m_noteTextPID = 0;
 }
 
-void WP6ContentListener::_paragraphNumberOn(const unsigned short outlineHash, const unsigned char level)
+void WP6ContentListener::_paragraphNumberOn(const uint16_t outlineHash, const uint8_t level)
 {
 	m_parseState->m_styleStateSequence.setCurrentState(BEGIN_NUMBERING_BEFORE_DISPLAY_REFERENCING);
 	m_parseState->m_putativeListElementHasParagraphNumber = true;
@@ -1862,11 +1872,21 @@ void WP6ContentListener::_flushText()
 // FIXME: This code mostly works, but was created more or less by trial and error and does not derive from
 // a good mental model of how lists actually work. Developing such a model is complicated (given that the
 // WordPerfect developers never had one) but we should at least try.
-void WP6ContentListener::_handleListChange(const unsigned short outlineHash)
+void WP6ContentListener::_handleListChange(const uint16_t outlineHash)
 {
 	if (!m_ps->m_isSectionOpened && !m_ps->m_inSubDocument && !m_ps->m_isTableOpened)
 		_openSection();
-	WP6OutlineDefinition *outlineDefinition = &m_outlineDefineHash[outlineHash];
+	WP6OutlineDefinition *outlineDefinition;
+
+	if (m_outlineDefineHash.empty() || (m_outlineDefineHash.find(outlineHash) == m_outlineDefineHash.end()))
+	{
+		// handle odd case where an outline define hash is not defined prior to being referenced by
+		// a list
+		outlineDefinition = new WP6OutlineDefinition();
+		m_outlineDefineHash[outlineHash] = outlineDefinition;
+	}
+	else
+		outlineDefinition = m_outlineDefineHash.find(outlineHash)->second;
 
 	unsigned oldListLevel;
 	if (m_parseState->m_listLevelStack.empty())
@@ -1876,35 +1896,41 @@ void WP6ContentListener::_handleListChange(const unsigned short outlineHash)
 
 	if (m_ps->m_currentListLevel > oldListLevel)
 	{
-		librevenge::RVNGPropertyList propList;
-		propList.insert("librevenge:list-id", m_parseState->m_currentOutlineHash);
-		propList.insert("librevenge:level", m_ps->m_currentListLevel);
-		propList.insert("text:min-label-width", m_ps->m_paragraphMarginLeft + m_ps->m_paragraphTextIndent - m_ps->m_listReferencePosition);
-		propList.insert("text:space-before", m_ps->m_listReferencePosition - m_ps->m_listBeginPosition);
+		WPXPropertyList propList;
+		propList.insert("libwpd:id", m_parseState->m_currentOutlineHash);
+		propList.insert("libwpd:level", m_ps->m_currentListLevel);
 
 		if (m_parseState->m_putativeListElementHasDisplayReferenceNumber)
 		{
 			WPXNumberingType listType = _extractWPXNumberingTypeFromBuf(m_parseState->m_numberText,
-			                                                            outlineDefinition->getListType((m_ps->m_currentListLevel-1)));
+			                            outlineDefinition->getListType((m_ps->m_currentListLevel-1)));
 			int number = _extractDisplayReferenceNumberFromBuf(m_parseState->m_numberText, listType);
 
 			propList.insert("style:num-prefix", m_parseState->m_textBeforeDisplayReference);
 			propList.insert("style:num-format", _numberingTypeToString(listType));
 			propList.insert("style:num-suffix", m_parseState->m_textAfterDisplayReference);
 			propList.insert("text:start-value", number);
+			propList.insert("text:min-label-width", m_ps->m_paragraphMarginLeft + m_ps->m_paragraphTextIndent - m_ps->m_listReferencePosition);
+			propList.insert("text:space-before", m_ps->m_listReferencePosition - m_ps->m_listBeginPosition);
+
+			m_documentInterface->defineOrderedListLevel(propList);
 		}
 		else
+		{
 			propList.insert("text:bullet-char", m_parseState->m_textBeforeDisplayReference);
-		m_listDefinitions[m_ps->m_currentListLevel] = propList;
+			propList.insert("text:min-label-width", m_ps->m_paragraphMarginLeft + m_ps->m_paragraphTextIndent - m_ps->m_listReferencePosition);
+			propList.insert("text:space-before", m_ps->m_listReferencePosition - m_ps->m_listBeginPosition);
 
+			m_documentInterface->defineUnorderedListLevel(propList);
+		}
 		for (unsigned i=(oldListLevel+1); i<=m_ps->m_currentListLevel; i++)
 		{
 			m_parseState->m_listLevelStack.push(i);
 
 			WPD_DEBUG_MSG(("Pushed level %u onto the list level stack\n", i));
 
-			librevenge::RVNGPropertyList propList2(m_listDefinitions[m_ps->m_currentListLevel]);
-			propList2.insert("librevenge:list-id", m_parseState->m_currentOutlineHash);
+			WPXPropertyList propList2;
+			propList2.insert("libwpd:id", m_parseState->m_currentOutlineHash);
 
 			if (m_parseState->m_putativeListElementHasDisplayReferenceNumber)
 			{
@@ -1959,7 +1985,7 @@ void WP6ContentListener::_changeList()
 	_handleListChange(m_parseState->m_currentOutlineHash);
 }
 
-void WP6ContentListener::undoChange(const unsigned char undoType, const unsigned short /* undoLevel */)
+void WP6ContentListener::undoChange(const uint8_t undoType, const uint16_t /* undoLevel */)
 {
 	if (undoType == WP6_UNDO_GROUP_INVALID_TEXT_START)
 		setUndoOn(true);

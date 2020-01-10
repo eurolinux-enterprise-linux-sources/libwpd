@@ -25,23 +25,23 @@
 
 #ifndef WP3RESOURCEFORK_H
 #define WP3RESOURCEFORK_H
+#include "WP3Resource.h"
 #include <map>
 #include <vector>
-#include <librevenge/librevenge.h>
-#include "WP3Resource.h"
 
+class WPXInputStream;
 class WPXEncryption;
 
 class WP3ResourceFork
 {
 public:
-	WP3ResourceFork(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	WP3ResourceFork(WPXInputStream *input, WPXEncryption *encryption);
 	virtual ~WP3ResourceFork();
 
-	const WP3Resource *getResource(unsigned type, unsigned ID) const;
+	const WP3Resource *getResource(uint32_t type, uint32_t ID) const;
 
 private:
-	std::multimap<unsigned, WP3Resource *> m_resourcesTypeMultimap, m_resourcesIDMultimap;
+	std::multimap<uint32_t, WP3Resource *> m_resourcesTypeMultimap, m_resourcesIDMultimap;
 };
 
 #endif /* WP3RESOURCEFORK_H */

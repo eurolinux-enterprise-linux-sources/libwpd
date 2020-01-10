@@ -33,7 +33,7 @@
 class WP3SingleByteFunction : public WP3Part
 {
 public:
-	static WP3SingleByteFunction *constructSingleByteFunction(librevenge::RVNGInputStream *input, WPXEncryption *encryption, unsigned char groupID);
+	static WP3SingleByteFunction *constructSingleByteFunction(WPXInputStream *input, WPXEncryption *encryption, uint8_t groupID);
 };
 
 class WP3HardSpaceFunction : public WP3SingleByteFunction

@@ -28,7 +28,6 @@
 #ifndef WP6CONTENTLISTENER_H
 #define WP6CONTENTLISTENER_H
 
-#include <librevenge/librevenge.h>
 #include "WP6Listener.h"
 #include "WPXContentListener.h"
 #include "WP6FileStructure.h"
@@ -37,6 +36,7 @@
 #include <map>
 #include <vector>
 
+class WPXDocumentInterface;
 class WPXTable;
 
 enum WP6StyleState { NORMAL, DOCUMENT_NOTE, DOCUMENT_NOTE_GLOBAL,
@@ -85,12 +85,12 @@ struct _WP6ContentParsingState
 {
 	_WP6ContentParsingState(WPXTableList tableList, unsigned nextTableIndice = 0);
 	~_WP6ContentParsingState();
-	librevenge::RVNGString m_bodyText;
-	librevenge::RVNGString m_textBeforeNumber;
-	librevenge::RVNGString m_textBeforeDisplayReference;
-	librevenge::RVNGString m_numberText;
-	librevenge::RVNGString m_textAfterDisplayReference;
-	librevenge::RVNGString m_textAfterNumber;
+	WPXString m_bodyText;
+	WPXString m_textBeforeNumber;
+	WPXString m_textBeforeDisplayReference;
+	WPXString m_numberText;
+	WPXString m_textAfterDisplayReference;
+	WPXString m_textAfterNumber;
 
 	double m_paragraphMarginBottomRelative;
 	double m_paragraphMarginBottomAbsolute;
@@ -106,8 +106,8 @@ struct _WP6ContentParsingState
 
 	std::stack<unsigned> m_listLevelStack;
 	std::stack<WP6ListType> m_listTypeStack;
-	unsigned short m_currentOutlineHash; // probably should replace Hash with Key in these sorts of cases
-	unsigned char m_oldListLevel;
+	uint16_t m_currentOutlineHash; // probably should replace Hash with Key in these sorts of cases
+	uint8_t m_oldListLevel;
 	WP6StyleStateSequence m_styleStateSequence;
 	bool m_putativeListElementHasParagraphNumber;
 	bool m_putativeListElementHasDisplayReferenceNumber;
@@ -117,8 +117,8 @@ struct _WP6ContentParsingState
 
 	bool m_isFrameOpened;
 
-	unsigned m_leaderCharacter;
-	unsigned char m_leaderNumSpaces;
+	uint32_t m_leaderCharacter;
+	uint8_t m_leaderNumSpaces;
 	std::vector<WPXTabStop> m_tempTabStops;
 	std::vector<bool> m_tempUsePreWP9LeaderMethod;
 
@@ -139,8 +139,9 @@ class WP6OutlineDefinition
 {
 public:
 	WP6OutlineDefinition();
-	WP6OutlineDefinition(const unsigned char *numberingMethods, const unsigned char tabBehaviourFlag);
-	void update(const unsigned char *numberingMethods, const unsigned char tabBehaviourFlag);
+	WP6OutlineDefinition(const WP6OutlineLocation outlineLocation, const uint8_t *numberingMethods,
+	                     const uint8_t tabBehaviourFlag);
+	void update(const uint8_t *numberingMethods, const uint8_t tabBehaviourFlag);
 
 	WPXNumberingType getListType(int level)
 	{
@@ -148,7 +149,7 @@ public:
 	}
 
 protected:
-	void _updateNumberingMethods(const unsigned char *numberingMethods);
+	void _updateNumberingMethods(const WP6OutlineLocation outlineLocation, const uint8_t *numberingMethods);
 
 private:
 	WPXNumberingType m_listTypes[WP6_NUM_LIST_LEVELS];
@@ -157,7 +158,7 @@ private:
 class WP6ContentListener : public WP6Listener, protected WPXContentListener
 {
 public:
-	WP6ContentListener(std::list<WPXPageSpan> &pageList, WPXTableList tableList, librevenge::RVNGTextInterface *documentInterface);
+	WP6ContentListener(std::list<WPXPageSpan> &pageList, WPXTableList tableList, WPXDocumentInterface *documentInterface);
 	~WP6ContentListener();
 
 	void startDocument()
@@ -168,21 +169,21 @@ public:
 	{
 		WPXContentListener::startSubDocument();
 	}
-	void setDate(const unsigned short type, const unsigned short year,
-	             const unsigned char month, const unsigned char day,
-	             const unsigned char hour, const unsigned char minute,
-	             const unsigned char second, const unsigned char dayOfWeek,
-	             const unsigned char timeZone, const unsigned char unused);
-	void setExtendedInformation(const unsigned short type, const librevenge::RVNGString &data);
-	void setAlignmentCharacter(const unsigned character);
-	void setLeaderCharacter(const unsigned character, const unsigned char numSpaces);
+	void setDate(const uint16_t type, const uint16_t year,
+	             const uint8_t month, const uint8_t day,
+	             const uint8_t hour, const uint8_t minute,
+	             const uint8_t second, const uint8_t dayOfWeek,
+	             const uint8_t timeZone, const uint8_t unused);
+	void setExtendedInformation(const uint16_t type, const WPXString &data);
+	void setAlignmentCharacter(const uint32_t character);
+	void setLeaderCharacter(const uint32_t character, const uint8_t numSpaces);
 	void defineTabStops(const bool isRelative, const std::vector<WPXTabStop> &tabStops,
 	                    const std::vector<bool> &usePreWP9LeaderMethods);
-	void insertCharacter(unsigned character);
-	void insertTab(const unsigned char tabType, double tabPosition);
+	void insertCharacter(uint32_t character);
+	void insertTab(const uint8_t tabType, double tabPosition);
 	void handleLineBreak();
 	void insertEOL();
-	void insertBreak(const unsigned char breakType)
+	void insertBreak(const uint8_t breakType)
 	{
 		WPXContentListener::insertBreak(breakType);
 	}
@@ -190,39 +191,40 @@ public:
 	{
 		WPXContentListener::lineSpacingChange(lineSpacing);
 	}
-	void justificationChange(const unsigned char justification)
+	void justificationChange(const uint8_t justification)
 	{
 		WPXContentListener::justificationChange(justification);
 	}
-	void characterColorChange(const unsigned char red, const unsigned char green, const unsigned char blue);
-	void characterShadingChange(const unsigned char shading);
+	void characterColorChange(const uint8_t red, const uint8_t green, const uint8_t blue);
+	void characterShadingChange(const uint8_t shading);
 	void highlightChange(const bool isOn, const RGBSColor &color);
-	void fontChange(const unsigned short matchedFontPointSize, const unsigned short fontPID, const librevenge::RVNGString &fontName);
-	void attributeChange(const bool isOn, const unsigned char attribute);
+	void fontChange(const uint16_t matchedFontPointSize, const uint16_t fontPID, const WPXString &fontName);
+	void attributeChange(const bool isOn, const uint8_t attribute);
 	void spacingAfterParagraphChange(const double spacingRelative, const double spacingAbsolute);
-	void pageNumberingChange(const WPXPageNumberPosition /* page numbering position */, const unsigned short /* matchedFontPointSize */, const unsigned short /* fontPID */) {}
-	void pageMarginChange(const unsigned char /* side */, const unsigned short /* margin */) {}
-	void pageFormChange(const unsigned short /* length */, const unsigned short /* width */, const WPXFormOrientation /* orientation */) {}
-	void marginChange(const unsigned char side, const unsigned short margin);
-	void paragraphMarginChange(const unsigned char side, const signed short margin);
-	void indentFirstLineChange(const signed short offset);
-	void columnChange(const WPXTextColumnType columnType, const unsigned char numColumns, const std::vector<double> &columnWidth,
+	void pageNumberingChange(const WPXPageNumberPosition /* page numbering position */, const uint16_t /* matchedFontPointSize */, const uint16_t /* fontPID */) {}
+	void pageMarginChange(const uint8_t /* side */, const uint16_t /* margin */) {}
+	void pageFormChange(const uint16_t /* length */, const uint16_t /* width */, const WPXFormOrientation /* orientation */) {}
+	void marginChange(const uint8_t side, const uint16_t margin);
+	void paragraphMarginChange(const uint8_t side, const int16_t margin);
+	void indentFirstLineChange(const int16_t offset);
+	void columnChange(const WPXTextColumnType columnType, const uint8_t numColumns, const std::vector<double> &columnWidth,
 	                  const std::vector<bool> &isFixedWidth);
-	void updateOutlineDefinition(const unsigned short outlineHash, const unsigned char *numberingMethods, const unsigned char tabBehaviourFlag);
+	void updateOutlineDefinition(const WP6OutlineLocation outlineLocation, const uint16_t outlineHash,
+	                             const uint8_t *numberingMethods, const uint8_t tabBehaviourFlag);
 
-	void paragraphNumberOn(const unsigned short outlineHash, const unsigned char level, const unsigned char flag);
+	void paragraphNumberOn(const uint16_t outlineHash, const uint8_t level, const uint8_t flag);
 	void paragraphNumberOff();
-	void displayNumberReferenceGroupOn(const unsigned char subGroup, const unsigned char level);
-	void displayNumberReferenceGroupOff(const unsigned char subGroup);
-	void styleGroupOn(const unsigned char subGroup);
-	void styleGroupOff(const unsigned char subGroup);
-	void globalOn(const unsigned char systemStyle);
+	void displayNumberReferenceGroupOn(const uint8_t subGroup, const uint8_t level);
+	void displayNumberReferenceGroupOff(const uint8_t subGroup);
+	void styleGroupOn(const uint8_t subGroup);
+	void styleGroupOff(const uint8_t subGroup);
+	void globalOn(const uint8_t systemStyle);
 	void globalOff();
-	void noteOn(const unsigned short textPID);
+	void noteOn(const uint16_t textPID);
 	void noteOff(const WPXNoteType noteType);
-	void headerFooterGroup(const unsigned char /* headerFooterType */, const unsigned char /* occurrenceBits */, const unsigned short /* textPID */) {}
-	void suppressPageCharacteristics(const unsigned char /* suppressCode */) {}
-	void setPageNumber(const unsigned short /* pageNumber */) {}
+	void headerFooterGroup(const uint8_t /* headerFooterType */, const uint8_t /* occurenceBits */, const uint16_t /* textPID */) {}
+	void suppressPageCharacteristics(const uint8_t /* suppressCode */) {}
+	void setPageNumber(const uint16_t /* pageNumber */) {}
 	void setPageNumberingType(const WPXNumberingType pageNumberingType);
 	void endDocument()
 	{
@@ -233,35 +235,35 @@ public:
 		WPXContentListener::endSubDocument();
 	}
 
-	void defineTable(const unsigned char position, const unsigned short leftOffset);
-	void addTableColumnDefinition(const unsigned width, const unsigned leftGutter, const unsigned rightGutter,
-	                              const unsigned attributes, const unsigned char alignment);
+	void defineTable(const uint8_t position, const uint16_t leftOffset);
+	void addTableColumnDefinition(const uint32_t width, const uint32_t leftGutter, const uint32_t rightGutter,
+	                              const uint32_t attributes, const uint8_t alignment);
 	void startTable();
-	void insertRow(const unsigned short rowHeight, const bool isMinimumHeight, const bool isHeaderRow);
-	void insertCell(const unsigned char colSpan, const unsigned char rowSpan, const unsigned char borderBits,
+	void insertRow(const uint16_t rowHeight, const bool isMinimumHeight, const bool isHeaderRow);
+	void insertCell(const uint8_t colSpan, const uint8_t rowSpan, const uint8_t borderBits,
 	                const RGBSColor *cellFgColor, const RGBSColor *cellBgColor,
 	                const RGBSColor *cellBorderColor, const WPXVerticalAlignment cellVerticalAlignment,
-	                const bool useCellAttributes, const unsigned cellAttributes);
+	                const bool useCellAttributes, const uint32_t cellAttributes);
 	void endTable();
-	void boxOn(const unsigned char anchoringType, const unsigned char generalPositioningFlags, const unsigned char horizontalPositioningFlags,
-	           const signed short horizontalOffset, const unsigned char leftColumn, const unsigned char rightColumn,
-	           const unsigned char verticalPositioningFlags, const signed short verticalOffset, const unsigned char widthFlags, const unsigned short width,
-	           const unsigned char heightFlags, const unsigned short height, const unsigned char boxContentType, const unsigned short nativeWidth,
-	           const unsigned short nativeHeight);
+	void boxOn(const uint8_t anchoringType, const uint8_t generalPositioningFlags, const uint8_t horizontalPositioningFlags,
+	           const int16_t horizontalOffset, const uint8_t leftColumn, const uint8_t rightColumn,
+	           const uint8_t verticalPositioningFlags, const int16_t verticalOffset, const uint8_t widthFlags, const uint16_t width,
+	           const uint8_t heightFlags, const uint16_t height, const uint8_t boxContentType, const uint16_t nativeWidth,
+	           const uint16_t nativeHeight);
 	void boxOff();
-	void insertGraphicsData(const unsigned short packetId);
+	void insertGraphicsData(const uint16_t packetId);
 	void insertTextBox(const WP6SubDocument *subDocument);
-	void commentAnnotation(const unsigned short textPID);
+	void commentAnnotation(const uint16_t textPID);
 
-	void undoChange(const unsigned char undoType, const unsigned short undoLevel);
+	void undoChange(const uint8_t undoType, const uint16_t undoLevel);
 
 protected:
 	void _handleSubDocument(const WPXSubDocument *subDocument, WPXSubDocumentType subDocumentType, WPXTableList tableList, unsigned nextTableIndice = 0);
 
 	//void _handleLineBreakElementBegin();
-	void _paragraphNumberOn(const unsigned short outlineHash, const unsigned char level);
+	void _paragraphNumberOn(const uint16_t outlineHash, const uint8_t level);
 	void _flushText();
-	void _handleListChange(const unsigned short outlineHash);
+	void _handleListChange(const uint16_t outlineHash);
 
 	void _changeList();
 
@@ -270,8 +272,7 @@ private:
 	WP6ContentListener &operator=(const WP6ContentListener &);
 	WP6ContentParsingState *m_parseState;
 
-	std::map<unsigned short,WP6OutlineDefinition> m_outlineDefineHash;
-	std::map<unsigned, librevenge::RVNGPropertyList> m_listDefinitions;
+	std::map<uint16_t,WP6OutlineDefinition *> m_outlineDefineHash;
 };
 
 #endif /* WP6CONTENTLISTENER_H */

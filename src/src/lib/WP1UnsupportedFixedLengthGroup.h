@@ -36,9 +36,9 @@
 class WP1UnsupportedFixedLengthGroup : public WP1FixedLengthGroup
 {
 public:
-	WP1UnsupportedFixedLengthGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption, unsigned char group);
+	WP1UnsupportedFixedLengthGroup(WPXInputStream *input, WPXEncryption *encryption, uint8_t group);
 
-	void _readContents(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	void _readContents(WPXInputStream *input, WPXEncryption *encryption);
 	void parse(WP1Listener * /* listener */) {}
 };
 

@@ -26,39 +26,39 @@
 #ifndef WP6BOXGROUP_H
 #define WP6BOXGROUP_H
 
-#include <librevenge/librevenge.h>
 #include "WP6VariableLengthGroup.h"
 #include "libwpd_internal.h"
 
+class WPXInputStream;
 class WP6Listener;
 
 class WP6BoxGroup : public WP6VariableLengthGroup
 {
 public:
-	WP6BoxGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
-	void _readContents(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	WP6BoxGroup(WPXInputStream *input, WPXEncryption *encryption);
+	void _readContents(WPXInputStream *input, WPXEncryption *encryption);
 	void parse(WP6Listener *listener);
 
 private:
-	unsigned char m_generalPositioningFlagsMask, m_generalPositioningFlagsData;
+	uint8_t m_generalPositioningFlagsMask, m_generalPositioningFlagsData;
 	bool m_hasHorizontalPositioning;
-	unsigned char m_horizontalPositioningFlags;
-	signed short m_horizontalOffset;
-	unsigned char m_leftColumn, m_rightColumn;
+	uint8_t m_horizontalPositioningFlags;
+	int16_t m_horizontalOffset;
+	uint8_t m_leftColumn, m_rightColumn;
 	bool m_hasVerticalPositioning;
-	unsigned char m_verticalPositioningFlags;
-	signed short m_verticalOffset;
+	uint8_t m_verticalPositioningFlags;
+	int16_t m_verticalOffset;
 	bool m_hasWidthInformation;
-	unsigned char m_widthFlags;
-	unsigned short m_width;
+	uint8_t m_widthFlags;
+	uint16_t m_width;
 	bool m_hasHeightInformation;
-	unsigned char m_heightFlags;
-	unsigned short m_height;
+	uint8_t m_heightFlags;
+	uint16_t m_height;
 	bool m_hasZOrderInformation;
-	unsigned char m_zOrderFlags;
+	uint8_t m_zOrderFlags;
 	bool m_hasBoxContentType;
-	unsigned char m_boxContentType;
-	unsigned short m_nativeWidth, m_nativeHeight;
+	uint8_t m_boxContentType;
+	uint16_t m_nativeWidth, m_nativeHeight;
 };
 
 #endif /* WP6BOXGROUP_H */

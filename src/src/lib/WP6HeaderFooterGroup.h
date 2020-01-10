@@ -32,11 +32,11 @@
 class WP6HeaderFooterGroup : public WP6VariableLengthGroup
 {
 public:
-	WP6HeaderFooterGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
-	void _readContents(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	WP6HeaderFooterGroup(WPXInputStream *input, WPXEncryption *encryption);
+	void _readContents(WPXInputStream *input, WPXEncryption *encryption);
 	void parse(WP6Listener *listener);
 private:
-	unsigned char m_occurrenceBits;
+	uint8_t m_occurenceBits;
 
 };
 

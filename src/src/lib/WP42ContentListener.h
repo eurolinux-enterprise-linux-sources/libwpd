@@ -38,13 +38,13 @@ struct _WP42ContentParsingState
 {
 	_WP42ContentParsingState();
 	~_WP42ContentParsingState();
-	librevenge::RVNGString m_textBuffer;
+	WPXString m_textBuffer;
 };
 
 class WP42ContentListener : public WP42Listener, protected WPXContentListener
 {
 public:
-	WP42ContentListener(std::list<WPXPageSpan> &pageList, std::vector<WP42SubDocument *> &subDocuments, librevenge::RVNGTextInterface *documentInterface);
+	WP42ContentListener(std::list<WPXPageSpan> &pageList, std::vector<WP42SubDocument *> &subDocuments, WPXDocumentInterface *documentInterface);
 	~WP42ContentListener();
 
 	void startDocument()
@@ -55,17 +55,17 @@ public:
 	{
 		WPXContentListener::startSubDocument();
 	}
-	void insertCharacter(unsigned character);
-	void insertTab(unsigned char tabType, double tabPosition);
-	void insertBreak(unsigned char breakType)
+	void insertCharacter(uint32_t character);
+	void insertTab(uint8_t tabType, double tabPosition);
+	void insertBreak(uint8_t breakType)
 	{
 		WPXContentListener::insertBreak(breakType);
 	}
 	void insertEOL();
-	void attributeChange(bool isOn, unsigned char attribute);
-	void marginReset(unsigned char leftMargin, unsigned char rightMargin);
-	void headerFooterGroup(unsigned char headerFooterDefinition, WP42SubDocument *subDocument);
-	void suppressPageCharacteristics(unsigned char /* suppressCode */) {}
+	void attributeChange(bool isOn, uint8_t attribute);
+	void marginReset(uint8_t leftMargin, uint8_t rightMargin);
+	void headerFooterGroup(uint8_t headerFooterDefinition, WP42SubDocument *subDocument);
+	void suppressPageCharacteristics(uint8_t /* suppressCode */) {}
 	void endDocument()
 	{
 		WPXContentListener::endDocument();

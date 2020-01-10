@@ -31,25 +31,25 @@
 class WP6Header : public WPXHeader
 {
 public:
-	WP6Header(librevenge::RVNGInputStream *input, WPXEncryption *encryption, unsigned documentOffset, unsigned char productType,
-	          unsigned char fileType, unsigned char majorVersion, unsigned char minorVersion, unsigned short documentEncryption);
+	WP6Header(WPXInputStream *input, WPXEncryption *encryption, uint32_t documentOffset, uint8_t productType,
+	          uint8_t fileType, uint8_t majorVersion, uint8_t minorVersion, uint16_t documentEncryption);
 	virtual ~WP6Header() {}
 
-	unsigned short getIndexHeaderOffset() const
+	uint16_t getIndexHeaderOffset() const
 	{
 		return m_indexHeaderOffset;
 	}
-	unsigned short getNumPrefixIndices() const
+	uint16_t getNumPrefixIndices() const
 	{
 		return m_numPrefixIndices;
 	}
 
 protected:
-	void _readIndexInformation(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	void _readIndexInformation(WPXInputStream *input, WPXEncryption *encryption);
 
 private:
-	unsigned short m_indexHeaderOffset;
-	unsigned short m_numPrefixIndices;
+	uint16_t m_indexHeaderOffset;
+	uint16_t m_numPrefixIndices;
 };
 #endif /* _WP6HEADER_H  */
 /* vim:set shiftwidth=4 softtabstop=4 noexpandtab: */

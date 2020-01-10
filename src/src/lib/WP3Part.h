@@ -27,8 +27,9 @@
 #ifndef WP3PART_H
 #define WP3PART_H
 
-#include <librevenge/librevenge.h>
+#include "libwpd_types.h"
 
+class WPXInputStream;
 class WP3Listener;
 class WPXEncryption;
 
@@ -37,7 +38,7 @@ class WP3Part
 public:
 	virtual ~WP3Part() {}
 
-	static WP3Part *constructPart(librevenge::RVNGInputStream *input, WPXEncryption *encryption, const unsigned char readVal);
+	static WP3Part *constructPart(WPXInputStream *input, WPXEncryption *encryption, const uint8_t readVal);
 	virtual void parse(WP3Listener *listener) = 0;
 };
 

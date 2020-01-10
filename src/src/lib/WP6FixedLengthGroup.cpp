@@ -34,12 +34,12 @@
 #include "WP6FileStructure.h"
 #include "libwpd_internal.h"
 
-WP6FixedLengthGroup::WP6FixedLengthGroup(unsigned char groupID)
+WP6FixedLengthGroup::WP6FixedLengthGroup(uint8_t groupID)
 	: m_group(groupID)
 {
 }
 
-WP6FixedLengthGroup *WP6FixedLengthGroup::constructFixedLengthGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption, unsigned char groupID)
+WP6FixedLengthGroup *WP6FixedLengthGroup::constructFixedLengthGroup(WPXInputStream *input, WPXEncryption *encryption, uint8_t groupID)
 {
 	switch (groupID)
 	{
@@ -61,44 +61,44 @@ WP6FixedLengthGroup *WP6FixedLengthGroup::constructFixedLengthGroup(librevenge::
 	case WP6_TOP_HIGHLIGHT_OFF:
 		return new WP6HighlightOffGroup(input, encryption, groupID);
 
-	// Add the remaining cases here
+		// Add the remaining cases here
 	default:
 		return new WP6UnsupportedFixedLengthGroup(input, encryption, groupID);
 	}
 }
 
-bool WP6FixedLengthGroup::isGroupConsistent(librevenge::RVNGInputStream *input, WPXEncryption *encryption, const unsigned char groupID)
+bool WP6FixedLengthGroup::isGroupConsistent(WPXInputStream *input, WPXEncryption *encryption, const uint8_t groupID)
 {
-	if (groupID == (unsigned char)0xFF)
+	if (groupID == (uint8_t)0xFF)
 		return false;
 
 	long startPosition = input->tell();
 
 	try
 	{
-		unsigned size = WP6_FIXED_LENGTH_FUNCTION_GROUP_SIZE[(unsigned char)groupID-0xF0];
-		if (input->seek((startPosition + size - 2), librevenge::RVNG_SEEK_SET) || input->isEnd())
+		uint32_t size = WP6_FIXED_LENGTH_FUNCTION_GROUP_SIZE[(uint8_t)groupID-0xF0];
+		if (input->seek((startPosition + size - 2), WPX_SEEK_SET) || input->atEOS())
 		{
-			input->seek(startPosition, librevenge::RVNG_SEEK_SET);
+			input->seek(startPosition, WPX_SEEK_SET);
 			return false;
 		}
-		if (input->isEnd() || groupID != readU8(input, encryption))
+		if (input->atEOS() || groupID != readU8(input, encryption))
 		{
-			input->seek(startPosition, librevenge::RVNG_SEEK_SET);
+			input->seek(startPosition, WPX_SEEK_SET);
 			return false;
 		}
 
-		input->seek(startPosition, librevenge::RVNG_SEEK_SET);
+		input->seek(startPosition, WPX_SEEK_SET);
 		return true;
 	}
-	catch (...)
+	catch(...)
 	{
-		input->seek(startPosition, librevenge::RVNG_SEEK_SET);
+		input->seek(startPosition, WPX_SEEK_SET);
 		return false;
 	}
 }
 
-void WP6FixedLengthGroup::_read(librevenge::RVNGInputStream *input, WPXEncryption *encryption)
+void WP6FixedLengthGroup::_read(WPXInputStream *input, WPXEncryption *encryption)
 {
 	long startPosition = input->tell();
 	_readContents(input, encryption);
@@ -106,7 +106,7 @@ void WP6FixedLengthGroup::_read(librevenge::RVNGInputStream *input, WPXEncryptio
 	if (m_group >= 0xF0 && m_group < 0xFF) // just an extra safety check
 	{
 		int size = WP6_FIXED_LENGTH_FUNCTION_GROUP_SIZE[m_group-0xF0];
-		input->seek((startPosition + size - 2), librevenge::RVNG_SEEK_SET);
+		input->seek((startPosition + size - 2), WPX_SEEK_SET);
 		if (m_group != readU8(input, encryption))
 		{
 			WPD_DEBUG_MSG(("WordPerfect: Possible corruption detected: bailing out!\n"));

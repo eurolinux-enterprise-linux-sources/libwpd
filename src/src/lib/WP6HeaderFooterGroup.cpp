@@ -28,16 +28,16 @@
 #include "WP6Listener.h"
 #include "libwpd_internal.h"
 
-WP6HeaderFooterGroup::WP6HeaderFooterGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption) :
+WP6HeaderFooterGroup::WP6HeaderFooterGroup(WPXInputStream *input, WPXEncryption *encryption) :
 	WP6VariableLengthGroup(),
-	m_occurrenceBits(0)
+	m_occurenceBits(0)
 {
 	_read(input, encryption);
 }
 
-void WP6HeaderFooterGroup::_readContents(librevenge::RVNGInputStream *input, WPXEncryption *encryption)
+void WP6HeaderFooterGroup::_readContents(WPXInputStream *input, WPXEncryption *encryption)
 {
-	m_occurrenceBits = readU8(input, encryption);
+	m_occurenceBits = readU8(input, encryption);
 }
 
 void WP6HeaderFooterGroup::parse(WP6Listener *listener)
@@ -46,7 +46,7 @@ void WP6HeaderFooterGroup::parse(WP6Listener *listener)
 
 	if (getNumPrefixIDs() > 0) // FIXME: perhaps we should throw an exception if this isn't true..
 	{
-		listener->headerFooterGroup(getSubGroup(), m_occurrenceBits, getPrefixIDs()[0]);
+		listener->headerFooterGroup(getSubGroup(), m_occurenceBits, getPrefixIDs()[0]);
 	}
 }
 /* vim:set shiftwidth=4 softtabstop=4 noexpandtab: */

@@ -1,5 +1,1 @@
-SUBDIRS = lib
-
-if BUILD_TOOLS
-SUBDIRS += conv
-endif
+SUBDIRS = lib conv test

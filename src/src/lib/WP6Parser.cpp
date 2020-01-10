@@ -37,7 +37,7 @@
 #include "WP6DefaultInitialFontPacket.h"
 #include "WPXTable.h"
 
-WP6Parser::WP6Parser(librevenge::RVNGInputStream *input, WPXHeader *header, WPXEncryption *encryption) :
+WP6Parser::WP6Parser(WPXInputStream *input, WPXHeader *header, WPXEncryption *encryption) :
 	WPXParser(input, header, encryption)
 {
 }
@@ -46,7 +46,7 @@ WP6Parser::~WP6Parser()
 {
 }
 
-WP6PrefixData *WP6Parser::getPrefixData(librevenge::RVNGInputStream *input, WPXEncryption *encryption)
+WP6PrefixData *WP6Parser::getPrefixData(WPXInputStream *input, WPXEncryption *encryption)
 {
 	WP6PrefixData *prefixData = 0;
 	try
@@ -54,7 +54,7 @@ WP6PrefixData *WP6Parser::getPrefixData(librevenge::RVNGInputStream *input, WPXE
 		prefixData = new WP6PrefixData(input, encryption, (static_cast<WP6Header *>(getHeader())->getNumPrefixIndices()));
 		return prefixData;
 	}
-	catch (FileException)
+	catch(FileException)
 	{
 		WPD_DEBUG_MSG(("WordPerfect: Prefix Data most likely corrupted.\n"));
 		// TODO: Try to check packet after packet so that we try to recover at least the begining if the corruption is not at
@@ -62,7 +62,7 @@ WP6PrefixData *WP6Parser::getPrefixData(librevenge::RVNGInputStream *input, WPXE
 		DELETEP(prefixData);
 		throw FileException();
 	}
-	catch (...)
+	catch(...)
 	{
 		WPD_DEBUG_MSG(("WordPerfect: Prefix Data most likely corrupted. Trying to ignore.\n"));
 		// TODO: Try to check packet after packet so that we try to recover at least the begining if the corruption is not at
@@ -72,11 +72,11 @@ WP6PrefixData *WP6Parser::getPrefixData(librevenge::RVNGInputStream *input, WPXE
 	}
 }
 
-void WP6Parser::parse(librevenge::RVNGInputStream *input, WPXEncryption *encryption, WP6Listener *listener)
+void WP6Parser::parse(WPXInputStream *input, WPXEncryption *encryption, WP6Listener *listener)
 {
 	listener->startDocument();
 
-	input->seek(getHeader()->getDocumentOffset(), librevenge::RVNG_SEEK_SET);
+	input->seek(getHeader()->getDocumentOffset(), WPX_SEEK_SET);
 
 	WPD_DEBUG_MSG(("WordPerfect: Starting document body parse (position = %ld)\n",(long)input->tell()));
 
@@ -85,7 +85,7 @@ void WP6Parser::parse(librevenge::RVNGInputStream *input, WPXEncryption *encrypt
 	listener->endDocument();
 }
 
-static const unsigned short extendedInternationalCharacterMap[] =
+static const uint16_t extendedInternationalCharacterMap[] =
 {
 	229, // lower case 'a' with a small circle
 	197, // upper case 'a' with a small circle
@@ -122,25 +122,25 @@ static const unsigned short extendedInternationalCharacterMap[] =
 };
 
 // parseDocument: parses a document body (may call itself recursively, on other streams, or itself)
-void WP6Parser::parseDocument(librevenge::RVNGInputStream *input, WPXEncryption *encryption, WP6Listener *listener)
+void WP6Parser::parseDocument(WPXInputStream *input, WPXEncryption *encryption, WP6Listener *listener)
 {
-	while (!input->isEnd())
+	while (!input->atEOS())
 	{
-		unsigned char readVal;
+		uint8_t readVal;
 		readVal = readU8(input, encryption);
 
-		if (readVal == (unsigned char)0x00)
+		if (readVal == (uint8_t)0x00)
 		{
 			// do nothing: this token is meaningless and is likely just corruption
 		}
-		else if (readVal <= (unsigned char)0x20)
+		else if (readVal <= (uint8_t)0x20)
 		{
-			listener->insertCharacter(extendedInternationalCharacterMap[(readVal-1)]);
+			listener->insertCharacter( extendedInternationalCharacterMap[(readVal-1)] );
 		}
-		else if (readVal >= (unsigned char)0x21 && readVal <= (unsigned char)0x7F)
+		else if (readVal >= (uint8_t)0x21 && readVal <= (uint8_t)0x7F)
 		{
 			// normal ASCII characters
-			listener->insertCharacter((unsigned)readVal);
+			listener->insertCharacter( (uint32_t)readVal );
 		}
 		else
 		{
@@ -182,13 +182,13 @@ void WP6Parser::parsePackets(WP6PrefixData *prefixData, int type, WP6Listener *l
 
 // WP6Parser::parse() reads AND parses a wordperfect document, passing any retrieved low-level
 // information to a low-level listener
-void WP6Parser::parse(librevenge::RVNGTextInterface *documentInterface)
+void WP6Parser::parse(WPXDocumentInterface *documentInterface)
 {
 	WP6PrefixData *prefixData = 0;
 	std::list<WPXPageSpan> pageList;
 	WPXTableList tableList;
 
-	librevenge::RVNGInputStream *input = getInput();
+	WPXInputStream *input = getInput();
 	WPXEncryption *encryption = getEncryption();
 
 	try
@@ -233,7 +233,7 @@ void WP6Parser::parse(librevenge::RVNGTextInterface *documentInterface)
 		// cleanup section: free the used resources
 		delete prefixData;
 	}
-	catch (FileException)
+	catch(FileException)
 	{
 		WPD_DEBUG_MSG(("WordPerfect: File Exception. Parse terminated prematurely."));
 
@@ -243,12 +243,12 @@ void WP6Parser::parse(librevenge::RVNGTextInterface *documentInterface)
 	}
 }
 
-void WP6Parser::parseSubDocument(librevenge::RVNGTextInterface *documentInterface)
+void WP6Parser::parseSubDocument(WPXDocumentInterface *documentInterface)
 {
 	std::list<WPXPageSpan> pageList;
 	WPXTableList tableList;
 
-	librevenge::RVNGInputStream *input = getInput();
+	WPXInputStream *input = getInput();
 
 	try
 	{
@@ -257,14 +257,14 @@ void WP6Parser::parseSubDocument(librevenge::RVNGTextInterface *documentInterfac
 		parseDocument(input, 0, &stylesListener);
 		stylesListener.endSubDocument();
 
-		input->seek(0, librevenge::RVNG_SEEK_SET);
+		input->seek(0, WPX_SEEK_SET);
 
 		WP6ContentListener listener(pageList, tableList, documentInterface);
 		listener.startSubDocument();
 		parseDocument(input, 0, &listener);
 		listener.endSubDocument();
 	}
-	catch (FileException)
+	catch(FileException)
 	{
 		WPD_DEBUG_MSG(("WordPerfect: File Exception. Parse terminated prematurely."));
 		throw FileException();

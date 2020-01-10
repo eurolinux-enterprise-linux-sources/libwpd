@@ -32,18 +32,18 @@
 class WP3FontGroup : public WP3VariableLengthGroup
 {
 public:
-	WP3FontGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	WP3FontGroup(WPXInputStream *input, WPXEncryption *encryption);
 	~WP3FontGroup();
-	void _readContents(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	void _readContents(WPXInputStream *input, WPXEncryption *encryption);
 	void parse(WP3Listener *listener);
 
 private:
 	/* Set Text Color */
 	RGBSColor m_fontColor;
 	/* Set Text Font */
-	librevenge::RVNGString m_fontName;
+	WPXString m_fontName;
 	/* Set Font Size */
-	unsigned short m_fontSize;
+	uint16_t m_fontSize;
 
 };
 

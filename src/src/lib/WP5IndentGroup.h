@@ -32,14 +32,14 @@
 class WP5IndentGroup : public WP5FixedLengthGroup
 {
 public:
-	WP5IndentGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption, unsigned char groupID);
+	WP5IndentGroup(WPXInputStream *input, WPXEncryption *encryption, uint8_t groupID);
 	void parse(WP5Listener *listener);
 
 protected:
-	void _readContents(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	void _readContents(WPXInputStream *input, WPXEncryption *encryption);
 
 private:
-	unsigned char m_indentType;
+	uint8_t m_indentType;
 	double m_indentPosition;
 };
 

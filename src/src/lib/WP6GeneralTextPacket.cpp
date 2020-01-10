@@ -24,13 +24,12 @@
  * Corel Corporation or Corel Corporation Limited."
  */
 #include <string.h>
-#include <vector>
 
 #include "WP6GeneralTextPacket.h"
 #include "WP6Parser.h"
 #include "libwpd_internal.h"
 
-WP6GeneralTextPacket::WP6GeneralTextPacket(librevenge::RVNGInputStream *input, WPXEncryption *encryption, int /* id */, unsigned dataOffset, unsigned dataSize):
+WP6GeneralTextPacket::WP6GeneralTextPacket(WPXInputStream *input, WPXEncryption *encryption, int /* id */, uint32_t dataOffset, uint32_t dataSize):
 	WP6PrefixDataPacket(input, encryption),
 	m_subDocument(0),
 	m_streamData(0)
@@ -46,11 +45,11 @@ WP6GeneralTextPacket::~WP6GeneralTextPacket()
 		delete [] m_streamData;
 }
 
-void WP6GeneralTextPacket::_readContents(librevenge::RVNGInputStream *input, WPXEncryption *encryption)
+void WP6GeneralTextPacket::_readContents(WPXInputStream *input, WPXEncryption *encryption)
 {
 	long startPosition = input->tell();
-	unsigned short numTextBlocks = readU16(input, encryption);
-	input->seek(4, librevenge::RVNG_SEEK_CUR);
+	uint16_t numTextBlocks = readU16(input, encryption);
+	input->seek(4, WPX_SEEK_CUR);
 
 	if (numTextBlocks < 1)
 	{
@@ -58,15 +57,15 @@ void WP6GeneralTextPacket::_readContents(librevenge::RVNGInputStream *input, WPX
 		return; // m_subDocument will be 0
 	}
 
-	std::vector<unsigned> blockSizes(numTextBlocks);
+	uint32_t *blockSizes = new uint32_t[numTextBlocks];
 	unsigned totalSize = 0;
 	unsigned i;
 
-	for (i=0; i<numTextBlocks; i++)
+	for(i=0; i<numTextBlocks; i++)
 	{
 		if ((input->tell() - startPosition + 4) < 0)
 			throw FileException();
-		if ((unsigned long)(input->tell() - startPosition + 4) > (unsigned long)getDataSize() || input->isEnd())
+		if ((unsigned long)(input->tell() - startPosition + 4) > (unsigned long)getDataSize() || input->atEOS())
 			throw FileException();
 		blockSizes[i] = readU32(input, encryption);
 		unsigned int newTotalSize = totalSize + blockSizes[i];
@@ -78,13 +77,15 @@ void WP6GeneralTextPacket::_readContents(librevenge::RVNGInputStream *input, WPX
 	if (!totalSize)
 	{
 		WPD_DEBUG_MSG(("WordPerfect: The total size of the text is %ui\n", totalSize));
+		if (blockSizes)
+			delete [] blockSizes;
 		return; // m_subDocument will be 0
 	}
-	m_streamData = new unsigned char[totalSize];
+	m_streamData = new uint8_t[totalSize];
 	unsigned streamPos = 0;
-	for (i=0; i<numTextBlocks; i++)
+	for(i=0; i<numTextBlocks; i++)
 	{
-		if ((input->tell() - startPosition + blockSizes[i]) > getDataSize() || input->isEnd())
+		if ((input->tell() - startPosition + blockSizes[i]) > getDataSize() || input->atEOS())
 			throw FileException();
 		for (unsigned int j=0; j<blockSizes[i]; j++)
 		{
@@ -92,6 +93,8 @@ void WP6GeneralTextPacket::_readContents(librevenge::RVNGInputStream *input, WPX
 			streamPos++;
 		}
 	}
+	if (blockSizes)
+		delete [] blockSizes;
 
 	if (totalSize)
 		m_subDocument = new WP6SubDocument(m_streamData, totalSize);

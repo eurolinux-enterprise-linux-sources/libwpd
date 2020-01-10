@@ -31,13 +31,13 @@
 class WP1ExtendedCharacterGroup : public WP1FixedLengthGroup
 {
 public:
-	WP1ExtendedCharacterGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption, unsigned char group);
+	WP1ExtendedCharacterGroup(WPXInputStream *input, WPXEncryption *encryption, uint8_t group);
 	~WP1ExtendedCharacterGroup();
-	void _readContents(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	void _readContents(WPXInputStream *input, WPXEncryption *encryption);
 	void parse(WP1Listener *listener);
 
 private:
-	unsigned char m_extendedCharacter;
+	uint8_t m_extendedCharacter;
 };
 
 #endif /* WP1EXTENDEDCHARACTERGROUP_H */

@@ -78,7 +78,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-@BUILD_TOOLS_TRUE@bin_PROGRAMS = wpd2raw$(EXEEXT)
+bin_PROGRAMS = $(am__EXEEXT_1)
 subdir = src/conv/raw
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(srcdir)/wpd2raw.rc.in $(top_srcdir)/depcomp
@@ -93,16 +93,18 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES = wpd2raw.rc
 CONFIG_CLEAN_VPATH_FILES =
+@WITH_LIBWPD_STREAM_TRUE@am__EXEEXT_1 = wpd2raw$(EXEEXT)
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am__wpd2raw_SOURCES_DIST = wpd2raw.cpp
-@BUILD_TOOLS_TRUE@am_wpd2raw_OBJECTS = wpd2raw.$(OBJEXT)
+am_wpd2raw_OBJECTS = RawDocumentGenerator.$(OBJEXT) wpd2raw.$(OBJEXT)
 wpd2raw_OBJECTS = $(am_wpd2raw_OBJECTS)
-am__DEPENDENCIES_1 =
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
+wpd2raw_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
+	$(CXXFLAGS) $(wpd2raw_LDFLAGS) $(LDFLAGS) -o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -137,8 +139,26 @@ AM_V_CXXLD = $(am__v_CXXLD_@AM_V@)
 am__v_CXXLD_ = $(am__v_CXXLD_@AM_DEFAULT_V@)
 am__v_CXXLD_0 = @echo "  CXXLD   " $@;
 am__v_CXXLD_1 = 
+COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+LTCOMPILE = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) \
+	$(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
+	$(AM_CFLAGS) $(CFLAGS)
+AM_V_CC = $(am__v_CC_@AM_V@)
+am__v_CC_ = $(am__v_CC_@AM_DEFAULT_V@)
+am__v_CC_0 = @echo "  CC      " $@;
+am__v_CC_1 = 
+CCLD = $(CC)
+LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(AM_LDFLAGS) $(LDFLAGS) -o $@
+AM_V_CCLD = $(am__v_CCLD_@AM_V@)
+am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
+am__v_CCLD_0 = @echo "  CCLD    " $@;
+am__v_CCLD_1 = 
 SOURCES = $(wpd2raw_SOURCES)
-DIST_SOURCES = $(am__wpd2raw_SOURCES_DIST)
+DIST_SOURCES = $(wpd2raw_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -207,6 +227,7 @@ LDFLAGS = @LDFLAGS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
+LIBWPD_STREAM_WIN32_RESOURCE = @LIBWPD_STREAM_WIN32_RESOURCE@
 LIBWPD_WIN32_RESOURCE = @LIBWPD_WIN32_RESOURCE@
 LIPO = @LIPO@
 LN_S = @LN_S@
@@ -235,12 +256,6 @@ PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
 RANLIB = @RANLIB@
-REVENGE_CFLAGS = @REVENGE_CFLAGS@
-REVENGE_GENERATORS_CFLAGS = @REVENGE_GENERATORS_CFLAGS@
-REVENGE_GENERATORS_LIBS = @REVENGE_GENERATORS_LIBS@
-REVENGE_LIBS = @REVENGE_LIBS@
-REVENGE_STREAM_CFLAGS = @REVENGE_STREAM_CFLAGS@
-REVENGE_STREAM_LIBS = @REVENGE_STREAM_LIBS@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
@@ -254,6 +269,8 @@ WPD_MAJOR_VERSION = @WPD_MAJOR_VERSION@
 WPD_MICRO_VERSION = @WPD_MICRO_VERSION@
 WPD_MINOR_VERSION = @WPD_MINOR_VERSION@
 WPD_VERSION = @WPD_VERSION@
+ZLIB_CFLAGS = @ZLIB_CFLAGS@
+ZLIB_LIBS = @ZLIB_LIBS@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -307,34 +324,28 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-@BUILD_TOOLS_TRUE@AM_CXXFLAGS = \
-@BUILD_TOOLS_TRUE@	-I$(top_srcdir)/inc \
-@BUILD_TOOLS_TRUE@	$(REVENGE_CFLAGS) \
-@BUILD_TOOLS_TRUE@	$(REVENGE_GENERATORS_CFLAGS) \
-@BUILD_TOOLS_TRUE@	$(REVENGE_STREAM_CFLAGS) \
-@BUILD_TOOLS_TRUE@	$(DEBUG_CXXFLAGS)
-
-@BUILD_TOOLS_TRUE@wpd2raw_DEPENDENCIES = @WPD2RAW_WIN32_RESOURCE@
-@BUILD_TOOLS_TRUE@wpd2raw_LDADD = \
-@BUILD_TOOLS_TRUE@	../../lib/libwpd-@WPD_MAJOR_VERSION@.@WPD_MINOR_VERSION@.la \
-@BUILD_TOOLS_TRUE@	$(REVENGE_GENERATORS_LIBS) \
-@BUILD_TOOLS_TRUE@	$(REVENGE_LIBS) \
-@BUILD_TOOLS_TRUE@	$(REVENGE_STREAM_LIBS) \
-@BUILD_TOOLS_TRUE@	@WPD2RAW_WIN32_RESOURCE@
-
-@BUILD_TOOLS_TRUE@wpd2raw_SOURCES = \
-@BUILD_TOOLS_TRUE@	wpd2raw.cpp
+@WITH_LIBWPD_STREAM_FALSE@target_wpd2raw = 
+@WITH_LIBWPD_STREAM_TRUE@target_wpd2raw = wpd2raw
+AM_CXXFLAGS = -I$(top_srcdir)/inc $(DEBUG_CXXFLAGS)
+wpd2raw_DEPENDENCIES = @WPD2RAW_WIN32_RESOURCE@
+@STATIC_TOOLS_FALSE@wpd2raw_LDADD = ../../lib/libwpd-@WPD_MAJOR_VERSION@.@WPD_MINOR_VERSION@.la ../../lib/libwpd-stream-@WPD_MAJOR_VERSION@.@WPD_MINOR_VERSION@.la @WPD2RAW_WIN32_RESOURCE@
+@STATIC_TOOLS_TRUE@wpd2raw_LDADD = ../../lib/@WPD_OBJDIR@/libwpd-@WPD_MAJOR_VERSION@.@WPD_MINOR_VERSION@.a ../../lib/@WPD_OBJDIR@/libwpd-stream-@WPD_MAJOR_VERSION@.@WPD_MINOR_VERSION@.a @WPD2RAW_WIN32_RESOURCE@
+@STATIC_TOOLS_TRUE@wpd2raw_LDFLAGS = -all-static
+wpd2raw_SOURCES = \
+	RawDocumentGenerator.cpp	 \
+	RawDocumentGenerator.h	 \
+	wpd2raw.cpp
 
 
 # Include the wpd2raw_SOURCES in case we build a tarball without stream
-@BUILD_TOOLS_TRUE@EXTRA_DIST = \
-@BUILD_TOOLS_TRUE@	$(wpd2raw_SOURCES)	\
-@BUILD_TOOLS_TRUE@	wpd2raw.rc.in
+EXTRA_DIST = \
+	$(wpd2raw_SOURCES)	\
+	wpd2raw.rc.in
 
 
 # These may be in the builddir too
-@BUILD_TOOLS_TRUE@BUILD_EXTRA_DIST = \
-@BUILD_TOOLS_TRUE@	wpd2raw.rc	 
+BUILD_EXTRA_DIST = \
+	wpd2raw.rc	 
 
 all: all-am
 
@@ -424,7 +435,7 @@ clean-binPROGRAMS:
 
 wpd2raw$(EXEEXT): $(wpd2raw_OBJECTS) $(wpd2raw_DEPENDENCIES) $(EXTRA_wpd2raw_DEPENDENCIES) 
 	@rm -f wpd2raw$(EXEEXT)
-	$(AM_V_CXXLD)$(CXXLINK) $(wpd2raw_OBJECTS) $(wpd2raw_LDADD) $(LIBS)
+	$(AM_V_CXXLD)$(wpd2raw_LINK) $(wpd2raw_OBJECTS) $(wpd2raw_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -432,6 +443,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/RawDocumentGenerator.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wpd2raw.Po@am__quote@
 
 .cpp.o:
@@ -667,9 +679,9 @@ uninstall-am: uninstall-binPROGRAMS
 	tags tags-am uninstall uninstall-am uninstall-binPROGRAMS
 
 
-@BUILD_TOOLS_TRUE@@OS_WIN32_TRUE@@WPD2RAW_WIN32_RESOURCE@ : wpd2raw.rc $(wpd2raw_OBJECTS)
-@BUILD_TOOLS_TRUE@@OS_WIN32_TRUE@	chmod +x $(top_srcdir)/build/win32/*compile-resource && \
-@BUILD_TOOLS_TRUE@@OS_WIN32_TRUE@	WINDRES=@WINDRES@ $(top_srcdir)/build/win32/lt-compile-resource wpd2raw.rc @WPD2RAW_WIN32_RESOURCE@
+@OS_WIN32_TRUE@@WPD2RAW_WIN32_RESOURCE@ : wpd2raw.rc $(wpd2raw_OBJECTS)
+@OS_WIN32_TRUE@	chmod +x $(top_srcdir)/build/win32/*compile-resource && \
+@OS_WIN32_TRUE@	WINDRES=@WINDRES@ $(top_srcdir)/build/win32/lt-compile-resource wpd2raw.rc @WPD2RAW_WIN32_RESOURCE@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

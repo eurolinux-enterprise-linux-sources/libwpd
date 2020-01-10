@@ -33,15 +33,15 @@ class WP1SubDocument;
 class WP1HeaderFooterGroup : public WP1VariableLengthGroup
 {
 public:
-	WP1HeaderFooterGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption, unsigned char group);
+	WP1HeaderFooterGroup(WPXInputStream *input, WPXEncryption *encryption, uint8_t group);
 	~WP1HeaderFooterGroup();
-	void _readContents(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	void _readContents(WPXInputStream *input, WPXEncryption *encryption);
 	void parse(WP1Listener *listener);
 
 private:
 	WP1HeaderFooterGroup(const WP1HeaderFooterGroup &);
 	WP1HeaderFooterGroup &operator=(const WP1HeaderFooterGroup &);
-	unsigned char m_definition;
+	uint8_t m_definition;
 	WP1SubDocument *m_subDocument;
 };
 

@@ -31,13 +31,13 @@
 class WP1PointSizeGroup : public WP1FixedLengthGroup
 {
 public:
-	WP1PointSizeGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption, unsigned char group);
+	WP1PointSizeGroup(WPXInputStream *input, WPXEncryption *encryption, uint8_t group);
 	~WP1PointSizeGroup();
-	void _readContents(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	void _readContents(WPXInputStream *input, WPXEncryption *encryption);
 	void parse(WP1Listener *listener);
 
 private:
-	unsigned char m_pointSize;
+	uint8_t m_pointSize;
 };
 
 #endif /* WP1POINTSIZEGROUP_H */

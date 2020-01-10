@@ -31,14 +31,14 @@
 #include "WP3Listener.h"
 #include "libwpd_internal.h"
 
-WP3DoubleByteScriptCharacterGroup::WP3DoubleByteScriptCharacterGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption, unsigned char groupID) :
+WP3DoubleByteScriptCharacterGroup::WP3DoubleByteScriptCharacterGroup(WPXInputStream *input, WPXEncryption *encryption, uint8_t groupID) :
 	WP3FixedLengthGroup(groupID),
 	m_scriptCharacter(0)
 {
 	_read(input, encryption);
 }
 
-void WP3DoubleByteScriptCharacterGroup::_readContents(librevenge::RVNGInputStream *input, WPXEncryption *encryption)
+void WP3DoubleByteScriptCharacterGroup::_readContents(WPXInputStream *input, WPXEncryption *encryption)
 {
 	m_scriptCharacter = readU16(input, encryption, true);
 }
@@ -49,7 +49,7 @@ void WP3DoubleByteScriptCharacterGroup::parse(WP3Listener *listener)
 	// actually 16 bit Unicode characters in Big Endian.
 	if (m_scriptCharacter)
 	{
-		const unsigned *chars;
+		const uint32_t *chars;
 		int len = appleWorldScriptToUCS4(m_scriptCharacter, &chars);
 		for (int i = 0; i < len; i++)
 			listener->insertCharacter(chars[i]);

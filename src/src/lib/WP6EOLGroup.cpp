@@ -31,7 +31,7 @@
 
 #include "WP6FillStylePacket.h" // for the fill packet
 
-WP6EOLGroup::WP6EOLGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption) :
+WP6EOLGroup::WP6EOLGroup(WPXInputStream *input, WPXEncryption *encryption) :
 	WP6VariableLengthGroup(),
 	m_colSpan(1),
 	m_rowSpan(1),
@@ -66,11 +66,11 @@ WP6EOLGroup::~WP6EOLGroup()
 	DELETEP(m_cellBorderColor);
 }
 
-void WP6EOLGroup::_readContents(librevenge::RVNGInputStream *input, WPXEncryption *encryption)
+void WP6EOLGroup::_readContents(WPXInputStream *input, WPXEncryption *encryption)
 {
 	WPD_DEBUG_MSG(("WordPerfect: EOL Group: Reading Embedded Sub-Function Data\n"));
 	long startPosition = input->tell();
-	unsigned short sizeDeletableSubFunctionData = readU16(input, encryption);
+	uint16_t sizeDeletableSubFunctionData = readU16(input, encryption);
 	WPD_DEBUG_MSG(("WordPerfect: EOL Group: Size of Deletable Sub-Function Data: %ld,  Size of Deletable and Non-deletable sub-function data: %ld\n", (long) sizeDeletableSubFunctionData, (long) getSizeNonDeletable()));
 	if ((long)sizeDeletableSubFunctionData > (long)getSizeNonDeletable())
 	{
@@ -78,11 +78,11 @@ void WP6EOLGroup::_readContents(librevenge::RVNGInputStream *input, WPXEncryptio
 		throw FileException();
 	}
 
-	input->seek(sizeDeletableSubFunctionData, librevenge::RVNG_SEEK_CUR);
+	input->seek(sizeDeletableSubFunctionData, WPX_SEEK_CUR);
 	while ((long)input->tell() < (long)(startPosition + getSizeNonDeletable()))
 	{
-		unsigned char byte;
-		unsigned short numBytesToSkip = 0;
+		uint8_t byte;
+		uint16_t numBytesToSkip = 0;
 		byte = readU8(input, encryption);
 		long startPosition2 = input->tell();
 		switch (byte)
@@ -90,7 +90,7 @@ void WP6EOLGroup::_readContents(librevenge::RVNGInputStream *input, WPXEncryptio
 		case WP6_EOL_GROUP_ROW_INFORMATION:
 			WPD_DEBUG_MSG(("WordPerfect: EOL Group Embedded Sub-Function: ROW_INFORMATION\n"));
 			numBytesToSkip = WP6_EOL_GROUP_ROW_INFORMATION_SIZE;
-			unsigned char rowFlags;
+			uint8_t rowFlags;
 			rowFlags = readU8(input, encryption);
 			if ((rowFlags & 0x04) == 0x04)
 				m_isHeaderRow = true;
@@ -109,7 +109,7 @@ void WP6EOLGroup::_readContents(librevenge::RVNGInputStream *input, WPXEncryptio
 			}
 			break;
 		case WP6_EOL_GROUP_CELL_FORMULA:
-			unsigned short embeddedSubGroupSize;
+			uint16_t embeddedSubGroupSize;
 			embeddedSubGroupSize = readU16(input, encryption);
 			WPD_DEBUG_MSG(("WordPerfect: EOL Group Embedded Sub-Function: CELL_FORMULA (length: %ld)\n",
 			               (long) embeddedSubGroupSize));
@@ -126,8 +126,8 @@ void WP6EOLGroup::_readContents(librevenge::RVNGInputStream *input, WPXEncryptio
 		case WP6_EOL_GROUP_CELL_INFORMATION:
 			WPD_DEBUG_MSG(("WordPerfect: EOL Group Embedded Sub-Function: CELL_INFORMATION\n"));
 			numBytesToSkip = WP6_EOL_GROUP_CELL_INFORMATION_SIZE;
-			unsigned char cellFlag, tmpCellVerticalAlign;
-			unsigned short attributeWord1, attributeWord2;
+			uint8_t cellFlag, tmpCellVerticalAlign;
+			uint16_t attributeWord1, attributeWord2;
 			cellFlag = readU8(input, encryption);
 			if ((cellFlag & 0x01) == 0x01)
 				m_useCellAttributes = true;
@@ -158,7 +158,7 @@ void WP6EOLGroup::_readContents(librevenge::RVNGInputStream *input, WPXEncryptio
 			}
 			attributeWord1 = readU16(input, encryption);
 			attributeWord2 = readU16(input, encryption);
-			m_cellAttributes = (unsigned)(((attributeWord2 & 0x03) << 16) + attributeWord1);
+			m_cellAttributes = (uint32_t)(((attributeWord2 & 0x03) << 16) + attributeWord1);
 			break;
 		case WP6_EOL_GROUP_CELL_SPANNING_INFORMATION:
 			WPD_DEBUG_MSG(("WordPerfect: EOL Group Embedded Sub-Function: CELL_SPANNING_INFORMATION\n"));
@@ -173,8 +173,8 @@ void WP6EOLGroup::_readContents(librevenge::RVNGInputStream *input, WPXEncryptio
 		case WP6_EOL_GROUP_CELL_FILL_COLORS:
 			WPD_DEBUG_MSG(("WordPerfect: EOL Group Embedded Sub-Function: CELL_FILL_COLORS\n"));
 			numBytesToSkip = WP6_EOL_GROUP_CELL_FILL_COLORS_SIZE;
-			unsigned char fR, fG, fB, fS;
-			unsigned char bR, bG, bB, bS;
+			uint8_t fR, fG, fB, fS;
+			uint8_t bR, bG, bB, bS;
 
 			fR = readU8(input, encryption);
 			fG = readU8(input, encryption);
@@ -239,7 +239,7 @@ void WP6EOLGroup::_readContents(librevenge::RVNGInputStream *input, WPXEncryptio
 
 		if (startPosition2 + numBytesToSkip - 1 - input->tell() < 0)
 			throw FileException();
-		input->seek((startPosition2 + numBytesToSkip - 1), librevenge::RVNG_SEEK_SET);
+		input->seek((startPosition2 + numBytesToSkip - 1), WPX_SEEK_SET);
 	}
 }
 
@@ -266,14 +266,14 @@ void WP6EOLGroup::parse(WP6Listener *listener)
 	}
 
 	// main search + dispatch for messages
-	switch (getSubGroup())
+	switch(getSubGroup())
 	{
 	case 0: // 0x00 (beginning of file)
 		break; // ignore
 	case WP6_EOL_GROUP_SOFT_EOL:
 	case WP6_EOL_GROUP_SOFT_EOC:
 	case WP6_EOL_GROUP_SOFT_EOC_AT_EOP: // 0x03 (soft EOC at EOP)
-		listener->insertCharacter((unsigned) ' ');
+		listener->insertCharacter((uint32_t) ' ');
 		break;
 	case WP6_EOL_GROUP_DELETABLE_HARD_EOL: // 0x17 (deletable hard EOL)
 	case WP6_EOL_GROUP_DELETABLE_HARD_EOL_AT_EOC: // 0x18 (deletable hard EOL at EOC)
@@ -337,7 +337,7 @@ void WP6EOLGroup::parse(WP6Listener *listener)
 	}
 
 	// search for soft page breaks and dispatch messages to that effect
-	switch (getSubGroup())
+	switch(getSubGroup())
 	{
 	case WP6_EOL_GROUP_HARD_EOL_AT_EOP:
 	case WP6_EOL_GROUP_TABLE_ROW_AT_EOP:

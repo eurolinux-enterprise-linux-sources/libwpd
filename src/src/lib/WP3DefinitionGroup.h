@@ -26,24 +26,25 @@
 #ifndef WP3DEFINITIONGROUP_H
 #define WP3DEFINITIONGROUP_H
 
-#include <vector>
-#include <librevenge/librevenge.h>
 #include "WP3VariableLengthGroup.h"
+#include "libwpd_types.h"
+#include <vector>
 
+class WPXInputStream;
 class WP3Listener;
 
 class WP3DefinitionGroup : public WP3VariableLengthGroup
 {
 public:
-	WP3DefinitionGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	WP3DefinitionGroup(WPXInputStream *input, WPXEncryption *encryption);
 	~WP3DefinitionGroup();
-	void _readContents(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	void _readContents(WPXInputStream *input, WPXEncryption *encryption);
 	void parse(WP3Listener *listener);
 
 private:
 	/* Variables used for subgroup 0x01 Set Columns On/Off */
-	unsigned char m_colType;
-	unsigned char m_numColumns;
+	uint8_t m_colType;
+	uint8_t m_numColumns;
 	std::vector<bool> m_isFixedWidth;
 	std::vector<double> m_columnWidth;
 

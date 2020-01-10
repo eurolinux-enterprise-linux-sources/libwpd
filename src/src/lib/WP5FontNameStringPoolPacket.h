@@ -27,21 +27,20 @@
 #define WP5FONTNAMESTRINGPACKET_H
 
 #include <map>
-#include <librevenge/librevenge.h>
-#include <librevenge-stream/librevenge-stream.h>
 #include <libwpd/libwpd.h>
+#include <libwpd-stream/libwpd-stream.h>
 #include "WP5GeneralPacketData.h"
 
 class WP5FontNameStringPoolPacket : public WP5GeneralPacketData
 {
 public:
-	WP5FontNameStringPoolPacket(librevenge::RVNGInputStream *input, WPXEncryption *encryption, int id, unsigned dataOffset, unsigned dataSize);
+	WP5FontNameStringPoolPacket(WPXInputStream *input, WPXEncryption *encryption, int id, uint32_t dataOffset, uint32_t dataSize);
 	~WP5FontNameStringPoolPacket();
-	void _readContents(librevenge::RVNGInputStream *input, WPXEncryption *encryption, unsigned dataSize);
-	librevenge::RVNGString getFontName(const unsigned int offset) const;
+	void _readContents(WPXInputStream *input, WPXEncryption *encryption, uint32_t dataSize);
+	WPXString getFontName(const unsigned int offset) const;
 
 private:
-	std::map<unsigned int, librevenge::RVNGString> m_fontNameString;
+	std::map<unsigned int, WPXString> m_fontNameString;
 };
 #endif /* WP5FONTNAMESTRINGPACKET_H */
 /* vim:set shiftwidth=4 softtabstop=4 noexpandtab: */

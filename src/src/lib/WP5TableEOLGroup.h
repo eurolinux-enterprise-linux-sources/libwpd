@@ -32,22 +32,22 @@
 class WP5TableEOLGroup : public WP5VariableLengthGroup
 {
 public:
-	WP5TableEOLGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	WP5TableEOLGroup(WPXInputStream *input, WPXEncryption *encryption);
 	~WP5TableEOLGroup();
-	void _readContents(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	void _readContents(WPXInputStream *input, WPXEncryption *encryption);
 	void parse(WP5Listener *listener);
 
 private:
 	// Beginning column sub-function
-	unsigned char m_cellVerticalAlignment;
+	uint8_t m_cellVerticalAlignment;
 	bool m_useCellAttributes;
 	bool m_useCellJustification;
-	unsigned char m_columnNumber;
-	unsigned char m_colSpan;
-	unsigned char m_rowSpan;
+	uint8_t m_columnNumber;
+	uint8_t m_colSpan;
+	uint8_t m_rowSpan;
 	bool m_spannedFromAbove;
-	unsigned short m_cellAttributes;
-	unsigned char m_cellJustification;
+	uint16_t m_cellAttributes;
+	uint8_t m_cellJustification;
 };
 
 #endif /* WP5TABLEEOLGROUP_H */

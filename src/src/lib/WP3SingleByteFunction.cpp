@@ -29,7 +29,7 @@
 #include "libwpd_internal.h"
 #include "WP3Listener.h"
 
-WP3SingleByteFunction *WP3SingleByteFunction::constructSingleByteFunction(librevenge::RVNGInputStream * /* input */, WPXEncryption * /* encryption */, unsigned char groupID)
+WP3SingleByteFunction *WP3SingleByteFunction::constructSingleByteFunction(WPXInputStream * /* input */, WPXEncryption * /* encryption */, uint8_t groupID)
 {
 
 	switch (groupID)
@@ -69,17 +69,17 @@ WP3SingleByteFunction *WP3SingleByteFunction::constructSingleByteFunction(librev
 
 void WP3HardSpaceFunction::parse(WP3Listener *listener)
 {
-	listener->insertCharacter((unsigned) 0xa0);
+	listener->insertCharacter((uint32_t) 0xa0);
 }
 
 void WP3HyphenFunction::parse(WP3Listener *listener)
 {
-	listener->insertCharacter((unsigned) '-');
+	listener->insertCharacter((uint32_t) '-');
 }
 
 void WP3SoftHyphenFunction::parse(WP3Listener *listener)
 {
-	listener->insertCharacter((unsigned) 0xad);
+	listener->insertCharacter((uint32_t) 0xad);
 }
 
 void WP3EOLFunction::parse(WP3Listener *listener)

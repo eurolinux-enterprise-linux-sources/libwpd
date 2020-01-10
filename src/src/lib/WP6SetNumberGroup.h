@@ -26,14 +26,14 @@
 class WP6SetNumberGroup : public WP6VariableLengthGroup
 {
 public:
-	WP6SetNumberGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	WP6SetNumberGroup(WPXInputStream *input, WPXEncryption *encryption);
 	~WP6SetNumberGroup();
-	void _readContents(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	void _readContents(WPXInputStream *input, WPXEncryption *encryption);
 	void parse(WP6Listener *listener);
 private:
-	unsigned char m_countOfLevelNumbersSetting;
-	unsigned char m_startingLevelNumber;
-	unsigned short m_countNumbers;
+	uint8_t m_countOfLevelNumbersSetting;
+	uint8_t m_startingLevelNumber;
+	uint16_t m_countNumbers;
 };
 
 #endif /* WP6SETNUMBERGROUP_H */

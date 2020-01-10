@@ -27,23 +27,23 @@
 #define WP5FOOTNOTEENDNOTEGROUP_H
 
 #include <libwpd/libwpd.h>
-#include <librevenge-stream/librevenge-stream.h>
+#include <libwpd-stream/libwpd-stream.h>
 #include "WP5VariableLengthGroup.h"
 #include "WP5SubDocument.h"
 
 class WP5FootnoteEndnoteGroup : public WP5VariableLengthGroup
 {
 public:
-	WP5FootnoteEndnoteGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	WP5FootnoteEndnoteGroup(WPXInputStream *input, WPXEncryption *encryption);
 	~WP5FootnoteEndnoteGroup();
-	void _readContents(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	void _readContents(WPXInputStream *input, WPXEncryption *encryption);
 	void parse(WP5Listener *listener);
 
 private:
 	WP5FootnoteEndnoteGroup(const WP5FootnoteEndnoteGroup &);
 	WP5FootnoteEndnoteGroup &operator=(const WP5FootnoteEndnoteGroup &);
 	WP5SubDocument *m_subDocument;
-	librevenge::RVNGString m_noteReference;
+	WPXString m_noteReference;
 
 };
 

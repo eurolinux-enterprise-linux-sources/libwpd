@@ -54,7 +54,7 @@ void WP1StylesListener::endSubDocument()
 	insertBreak(WPX_SOFT_PAGE_BREAK); // pretend we just had a soft page break (for the last page)
 }
 
-void WP1StylesListener::insertBreak(unsigned char breakType)
+void WP1StylesListener::insertBreak(uint8_t breakType)
 {
 	if (m_isSubDocument)
 		return;
@@ -83,19 +83,19 @@ void WP1StylesListener::insertBreak(unsigned char breakType)
 			m_currentPage = WPXPageSpan(m_pageList.back(), 0.0, 0.0);
 			m_currentPage.setPageSpan(1);
 
-			for (std::vector<WPXHeaderFooter>::const_iterator HFiter = (m_nextPage.getHeaderFooterList()).begin();
+			for(std::vector<WPXHeaderFooter>::const_iterator HFiter = (m_nextPage.getHeaderFooterList()).begin();
 			        HFiter != (m_nextPage.getHeaderFooterList()).end(); ++HFiter)
 			{
-				if ((*HFiter).getOccurrence() != NEVER)
+				if ((*HFiter).getOccurence() != NEVER)
 				{
 					m_currentPage.setHeaderFooter((*HFiter).getType(), (*HFiter).getInternalType(),
-					                              (*HFiter).getOccurrence(), (*HFiter).getSubDocument(), (*HFiter).getTableList());
+					                              (*HFiter).getOccurence(), (*HFiter).getSubDocument(), (*HFiter).getTableList());
 					_handleSubDocument((*HFiter).getSubDocument(), WPX_SUBDOCUMENT_HEADER_FOOTER, (*HFiter).getTableList());
 				}
 				else
 				{
 					m_currentPage.setHeaderFooter((*HFiter).getType(), (*HFiter).getInternalType(),
-					                              (*HFiter).getOccurrence(), 0, (*HFiter).getTableList());
+					                              (*HFiter).getOccurence(), 0, (*HFiter).getTableList());
 				}
 			}
 			m_nextPage = WPXPageSpan();
@@ -114,7 +114,7 @@ void WP1StylesListener::insertBreak(unsigned char breakType)
 	}
 }
 
-void WP1StylesListener::marginReset(unsigned short leftMargin, unsigned short rightMargin)
+void WP1StylesListener::marginReset(uint16_t leftMargin, uint16_t rightMargin)
 {
 	if (!isUndoOn())
 	{
@@ -162,7 +162,7 @@ void WP1StylesListener::marginReset(unsigned short leftMargin, unsigned short ri
 	}
 }
 
-void WP1StylesListener::topMarginSet(unsigned short topMargin)
+void WP1StylesListener::topMarginSet(uint16_t topMargin)
 {
 	if (!isUndoOn())
 	{
@@ -172,7 +172,7 @@ void WP1StylesListener::topMarginSet(unsigned short topMargin)
 	}
 }
 
-void WP1StylesListener::bottomMarginSet(unsigned short bottomMargin)
+void WP1StylesListener::bottomMarginSet(uint16_t bottomMargin)
 {
 	if (!isUndoOn())
 	{
@@ -182,7 +182,7 @@ void WP1StylesListener::bottomMarginSet(unsigned short bottomMargin)
 	}
 }
 
-void WP1StylesListener::headerFooterGroup(unsigned char headerFooterDefinition, WP1SubDocument *subDocument)
+void WP1StylesListener::headerFooterGroup(uint8_t headerFooterDefinition, WP1SubDocument *subDocument)
 {
 	if (subDocument)
 		m_subDocuments.push_back(subDocument);
@@ -191,44 +191,44 @@ void WP1StylesListener::headerFooterGroup(unsigned char headerFooterDefinition, 
 	{
 		bool tempCurrentPageHasContent = m_currentPageHasContent;
 
-		unsigned char headerFooterType = (unsigned char)(headerFooterDefinition & 0x03);
+		uint8_t headerFooterType = (uint8_t)(headerFooterDefinition & 0x03);
 		WPXHeaderFooterType wpxType = ((headerFooterType <= WPX_HEADER_B) ? HEADER : FOOTER);
 
-		unsigned char occurrenceBits = (unsigned char)((headerFooterDefinition & 0x1C) >> 2);
+		uint8_t occurenceBits = (uint8_t)((headerFooterDefinition & 0x1C) >> 2);
 
-		WPD_DEBUG_MSG(("WordPerfect: headerFooterGroup (headerFooterType: %i, occurrenceBits: %i)\n",
-		               headerFooterType, occurrenceBits));
+		WPD_DEBUG_MSG(("WordPerfect: headerFooterGroup (headerFooterType: %i, occurenceBits: %i)\n",
+		               headerFooterType, occurenceBits));
 
-		WPXHeaderFooterOccurrence wpxOccurrence;
+		WPXHeaderFooterOccurence wpxOccurence;
 
-		if (occurrenceBits & WP1_HEADER_FOOTER_GROUP_ALL_BIT)
-			wpxOccurrence = ALL;
-		else if (occurrenceBits & WP1_HEADER_FOOTER_GROUP_EVEN_BIT)
-			wpxOccurrence = EVEN;
-		else if (occurrenceBits & WP1_HEADER_FOOTER_GROUP_ODD_BIT)
-			wpxOccurrence = ODD;
+		if (occurenceBits & WP1_HEADER_FOOTER_GROUP_ALL_BIT)
+			wpxOccurence = ALL;
+		else if (occurenceBits & WP1_HEADER_FOOTER_GROUP_EVEN_BIT)
+			wpxOccurence = EVEN;
+		else if (occurenceBits & WP1_HEADER_FOOTER_GROUP_ODD_BIT)
+			wpxOccurence = ODD;
 		else
-			wpxOccurrence = NEVER;
+			wpxOccurence = NEVER;
 
 		WPXTableList tableList;
 
 		if ((wpxType == HEADER) && tempCurrentPageHasContent)
-			m_nextPage.setHeaderFooter(wpxType, headerFooterType, wpxOccurrence, subDocument, tableList);
+			m_nextPage.setHeaderFooter(wpxType, headerFooterType, wpxOccurence, subDocument, tableList);
 		else /* FOOTER || !tempCurrentPageHasContent */
 		{
-			if (wpxOccurrence != NEVER)
+			if (wpxOccurence != NEVER)
 			{
-				m_currentPage.setHeaderFooter(wpxType, headerFooterType, wpxOccurrence, subDocument, tableList);
+				m_currentPage.setHeaderFooter(wpxType, headerFooterType, wpxOccurence, subDocument, tableList);
 				_handleSubDocument(subDocument, WPX_SUBDOCUMENT_HEADER_FOOTER, tableList);
 			}
 			else
-				m_currentPage.setHeaderFooter(wpxType, headerFooterType, wpxOccurrence, 0, tableList);
+				m_currentPage.setHeaderFooter(wpxType, headerFooterType, wpxOccurence, 0, tableList);
 		}
 		m_currentPageHasContent = tempCurrentPageHasContent;
 	}
 }
 
-void WP1StylesListener::suppressPageCharacteristics(unsigned char suppressCode)
+void WP1StylesListener::suppressPageCharacteristics(uint8_t suppressCode)
 {
 	if (!isUndoOn())
 	{
@@ -251,7 +251,7 @@ void WP1StylesListener::suppressPageCharacteristics(unsigned char suppressCode)
 }
 
 void WP1StylesListener::_handleSubDocument(const WPXSubDocument *subDocument, WPXSubDocumentType subDocumentType,
-                                           WPXTableList /* tableList */, int /* nextTableIndice */)
+        WPXTableList /* tableList */, int /* nextTableIndice */)
 {
 	if (!isUndoOn())
 	{

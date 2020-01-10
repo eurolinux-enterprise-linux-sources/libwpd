@@ -26,13 +26,13 @@
 class WP6NumberingMethodGroup : public WP6VariableLengthGroup
 {
 public:
-	WP6NumberingMethodGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	WP6NumberingMethodGroup(WPXInputStream *input, WPXEncryption *encryption);
 	~WP6NumberingMethodGroup();
-	void _readContents(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	void _readContents(WPXInputStream *input, WPXEncryption *encryption);
 	void parse(WP6Listener *listener);
 private:
-	unsigned char m_levelNumber;
-	unsigned char m_numberingMethod;
+	uint8_t m_levelNumber;
+	uint8_t m_numberingMethod;
 };
 
 #endif /* WP6NUMBERINGMETHODGROUP_H */

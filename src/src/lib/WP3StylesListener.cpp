@@ -59,7 +59,7 @@ void WP3StylesListener::endSubDocument()
 	setUndoOn(false);
 }
 
-void WP3StylesListener::insertBreak(const unsigned char breakType)
+void WP3StylesListener::insertBreak(const uint8_t breakType)
 {
 	if (m_isSubDocument)
 		return;
@@ -99,7 +99,7 @@ void WP3StylesListener::insertBreak(const unsigned char breakType)
 	}
 }
 
-void WP3StylesListener::undoChange(const unsigned char /* undoType */, const unsigned short /* undoLevel */)
+void WP3StylesListener::undoChange(const uint8_t /* undoType */, const uint16_t /* undoLevel */)
 {
 // enable when have understood the undo change functions in WP3 file-format
 #if 0
@@ -110,12 +110,12 @@ void WP3StylesListener::undoChange(const unsigned char /* undoType */, const uns
 #endif
 }
 
-void WP3StylesListener::pageMarginChange(const unsigned char side, const unsigned short margin)
+void WP3StylesListener::pageMarginChange(const uint8_t side, const uint16_t margin)
 {
 	if (!isUndoOn())
 	{
 		double marginInch = (double)((double)margin / (double)WPX_NUM_WPUS_PER_INCH);
-		switch (side)
+		switch(side)
 		{
 		case WPX_TOP:
 			m_currentPage.setMarginTop(marginInch);
@@ -129,7 +129,7 @@ void WP3StylesListener::pageMarginChange(const unsigned char side, const unsigne
 	}
 }
 
-void WP3StylesListener::marginChange(const unsigned char side, const unsigned short margin)
+void WP3StylesListener::marginChange(const uint8_t side, const uint16_t margin)
 {
 	if (!isUndoOn())
 	{
@@ -138,7 +138,7 @@ void WP3StylesListener::marginChange(const unsigned char side, const unsigned sh
 
 		std::list<WPXPageSpan>::iterator Iter;
 		double marginInch = (double)((double)margin / (double)WPX_NUM_WPUS_PER_INCH);
-		switch (side)
+		switch(side)
 		{
 		case WPX_LEFT:
 			if (!m_currentPageHasContent && (m_pageListHardPageMark == m_pageList.end()))
@@ -175,7 +175,7 @@ void WP3StylesListener::marginChange(const unsigned char side, const unsigned sh
 	}
 }
 
-void WP3StylesListener::pageFormChange(const unsigned short length, const unsigned short width, const WPXFormOrientation orientation)
+void WP3StylesListener::pageFormChange(const uint16_t length, const uint16_t width, const WPXFormOrientation orientation)
 {
 	if (!isUndoOn())
 	{
@@ -190,46 +190,46 @@ void WP3StylesListener::pageFormChange(const unsigned short length, const unsign
 	}
 }
 
-void WP3StylesListener::headerFooterGroup(const unsigned char headerFooterType, const unsigned char occurrenceBits, WP3SubDocument *subDocument)
+void WP3StylesListener::headerFooterGroup(const uint8_t headerFooterType, const uint8_t occurenceBits, WP3SubDocument *subDocument)
 {
 	if (!isUndoOn())
 	{
 		if (subDocument)
 			m_subDocuments.push_back(subDocument);
 
-		WPD_DEBUG_MSG(("WordPerfect: headerFooterGroup (headerFooterType: %i, occurrenceBits: %i)\n",
-		               headerFooterType, occurrenceBits));
+		WPD_DEBUG_MSG(("WordPerfect: headerFooterGroup (headerFooterType: %i, occurenceBits: %i)\n",
+		               headerFooterType, occurenceBits));
 		bool tempCurrentPageHasContent = m_currentPageHasContent;
 		if (headerFooterType <= WP3_HEADER_FOOTER_GROUP_FOOTER_B) // ignore watermarks for now
 		{
 			WPXHeaderFooterType wpxType = ((headerFooterType <= WP3_HEADER_FOOTER_GROUP_HEADER_B) ? HEADER : FOOTER);
 
-			WPXHeaderFooterOccurrence wpxOccurrence;
-			if ((occurrenceBits & WP3_HEADER_FOOTER_GROUP_EVEN_BIT) && (occurrenceBits & WP3_HEADER_FOOTER_GROUP_ODD_BIT))
-				wpxOccurrence = ALL;
-			else if (occurrenceBits & WP3_HEADER_FOOTER_GROUP_EVEN_BIT)
-				wpxOccurrence = EVEN;
-			else if (occurrenceBits & WP3_HEADER_FOOTER_GROUP_ODD_BIT)
-				wpxOccurrence = ODD;
+			WPXHeaderFooterOccurence wpxOccurence;
+			if ((occurenceBits & WP3_HEADER_FOOTER_GROUP_EVEN_BIT) && (occurenceBits & WP3_HEADER_FOOTER_GROUP_ODD_BIT))
+				wpxOccurence = ALL;
+			else if (occurenceBits & WP3_HEADER_FOOTER_GROUP_EVEN_BIT)
+				wpxOccurence = EVEN;
+			else if (occurenceBits & WP3_HEADER_FOOTER_GROUP_ODD_BIT)
+				wpxOccurence = ODD;
 			else
-				wpxOccurrence = NEVER;
+				wpxOccurence = NEVER;
 
 			WPXTableList tableList;
 
-			if (wpxOccurrence != NEVER)
+			if (wpxOccurence != NEVER)
 			{
-				m_currentPage.setHeaderFooter(wpxType, headerFooterType, wpxOccurrence, subDocument, tableList);
+				m_currentPage.setHeaderFooter(wpxType, headerFooterType, wpxOccurence, subDocument, tableList);
 				_handleSubDocument(subDocument, WPX_SUBDOCUMENT_HEADER_FOOTER, tableList);
 			}
 			else
-				m_currentPage.setHeaderFooter(wpxType, headerFooterType, wpxOccurrence, 0, tableList);
+				m_currentPage.setHeaderFooter(wpxType, headerFooterType, wpxOccurence, 0, tableList);
 		}
 		m_currentPageHasContent = tempCurrentPageHasContent;
 	}
 }
 
 
-void WP3StylesListener::suppressPage(const unsigned short suppressCode)
+void WP3StylesListener::suppressPage(const uint16_t suppressCode)
 {
 	if (!isUndoOn())
 	{
@@ -255,8 +255,28 @@ void WP3StylesListener::startTable()
 	}
 }
 
+void WP3StylesListener::insertRow()
+{
+	if (!isUndoOn())
+	{
+		m_currentPageHasContent = true;
+		m_currentTable->insertRow();
+	}
+}
+
+void WP3StylesListener::insertCell()
+{
+	if (!isUndoOn())
+	{
+		m_currentPageHasContent = true;
+#if 0
+		m_currentTable->insertCell(colSpan, rowSpan, borderBits);
+#endif
+	}
+}
+
 void WP3StylesListener::_handleSubDocument(const WPXSubDocument *subDocument, WPXSubDocumentType subDocumentType,
-                                           WPXTableList tableList, int /* nextTableIndice */)
+        WPXTableList tableList, int /* nextTableIndice */)
 {
 	bool oldIsSubDocument = m_isSubDocument;
 	m_isSubDocument = true;

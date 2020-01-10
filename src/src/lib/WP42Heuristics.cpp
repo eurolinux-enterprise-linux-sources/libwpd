@@ -29,14 +29,12 @@
 #include "WP42FileStructure.h"
 #include "libwpd_internal.h"
 
-using namespace libwpd;
-
-WPDPasswordMatch WP42Heuristics::verifyPassword(librevenge::RVNGInputStream *input, const char *password)
+WPDPasswordMatch WP42Heuristics::verifyPassword(WPXInputStream *input, const char *password)
 {
 	if (!password)
 		return WPD_PASSWORD_MATCH_DONTKNOW;
 
-	input->seek(0, librevenge::RVNG_SEEK_SET);
+	input->seek(0, WPX_SEEK_SET);
 	WPXEncryption *encryption = 0;
 	try
 	{
@@ -66,9 +64,9 @@ WPDPasswordMatch WP42Heuristics::verifyPassword(librevenge::RVNGInputStream *inp
 	}
 }
 
-WPDConfidence WP42Heuristics::isWP42FileFormat(librevenge::RVNGInputStream *input, const char *password)
+WPDConfidence WP42Heuristics::isWP42FileFormat(WPXInputStream *input, const char *password)
 {
-	input->seek(0, librevenge::RVNG_SEEK_SET);
+	input->seek(0, WPX_SEEK_SET);
 	WPXEncryption *encryption = 0;
 	try
 	{
@@ -91,34 +89,34 @@ WPDConfidence WP42Heuristics::isWP42FileFormat(librevenge::RVNGInputStream *inpu
 			}
 		}
 
-		input->seek(0, librevenge::RVNG_SEEK_SET);
+		input->seek(0, WPX_SEEK_SET);
 		if (password && encryption)
-			input->seek(6, librevenge::RVNG_SEEK_SET);
+			input->seek(6, WPX_SEEK_SET);
 
 		int functionGroupCount = 0;
 
 		WPD_DEBUG_MSG(("WP42Heuristics::isWP42FileFormat()\n"));
 
-		while (!input->isEnd())
+		while (!input->atEOS())
 		{
-			unsigned char readVal = readU8(input, encryption);
+			uint8_t readVal = readU8(input, encryption);
 
 			WPD_DEBUG_MSG(("WP42Heuristics, Offset 0x%.8x, value 0x%.2x\n", (unsigned int)(input->tell() - 1), readVal));
 
-			if (readVal < (unsigned char)0x20)
+			if (readVal < (uint8_t)0x20)
 			{
 				// line breaks et al, skip
 			}
-			else if (readVal >= (unsigned char)0x20 && readVal <= (unsigned char)0x7F)
+			else if (readVal >= (uint8_t)0x20 && readVal <= (uint8_t)0x7F)
 			{
 				// normal ASCII characters, skip
 			}
-			else if (readVal >= (unsigned char)0x80 && readVal <= (unsigned char)0xBF)
+			else if (readVal >= (uint8_t)0x80 && readVal <= (uint8_t)0xBF)
 			{
 				// single character function codes, skip
 				functionGroupCount++;
 			}
-			else if (readVal >= (unsigned char)0xFF)
+			else if (readVal >= (uint8_t)0xFF)
 			{
 				// special codes that should not be found as separate functions
 				if (encryption)
@@ -136,8 +134,8 @@ WPDConfidence WP42Heuristics::isWP42FileFormat(librevenge::RVNGInputStream *inpu
 					// variable length function group
 
 					// skip over all the bytes in the group, and scan for the closing gate
-					unsigned char readNextVal = 0;
-					while (!input->isEnd())
+					uint8_t readNextVal = 0;
+					while (!input->atEOS())
 					{
 						readNextVal = readU8(input, encryption);
 						if (readNextVal == readVal)
@@ -145,7 +143,7 @@ WPDConfidence WP42Heuristics::isWP42FileFormat(librevenge::RVNGInputStream *inpu
 					}
 
 					// when passed the complete file, we don't allow for open groups when we've reached EOF
-					if ((readNextVal == 0) || (input->isEnd() && (readNextVal != readVal)))
+					if ((readNextVal == 0) || (input->atEOS() && (readNextVal != readVal)))
 					{
 						if (encryption)
 							delete encryption;
@@ -159,7 +157,7 @@ WPDConfidence WP42Heuristics::isWP42FileFormat(librevenge::RVNGInputStream *inpu
 					// fixed length function group
 
 					// seek to the position where the closing gate should be
-					int res = input->seek(WP42_FUNCTION_GROUP_SIZE[readVal-0xC0]-2, librevenge::RVNG_SEEK_CUR);
+					int res = input->seek(WP42_FUNCTION_GROUP_SIZE[readVal-0xC0]-2, WPX_SEEK_CUR);
 					// when passed the complete file, we should be able to do that
 					if (res)
 					{
@@ -169,7 +167,7 @@ WPDConfidence WP42Heuristics::isWP42FileFormat(librevenge::RVNGInputStream *inpu
 					}
 
 					// read the closing gate
-					unsigned char readNextVal = readU8(input, encryption);
+					uint8_t readNextVal = readU8(input, encryption);
 					if (readNextVal != readVal)
 					{
 						if (encryption)

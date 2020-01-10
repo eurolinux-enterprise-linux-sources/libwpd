@@ -30,10 +30,10 @@
 #include <stdio.h>
 #include <string>
 #include <algorithm>
-#include <librevenge/librevenge.h>
-#include <librevenge-stream/librevenge-stream.h>
 #include <libwpd/libwpd.h>
+#include <libwpd-stream/libwpd-stream.h>
 #include "WPXEncryption.h"
+#include "libwpd_types.h"
 
 /* Various functions/defines that need not/should not be exported externally */
 
@@ -48,7 +48,8 @@
 
 #define WPD_CHECK_FILE_ERROR(v) if (v==EOF) { WPD_DEBUG_MSG(("X_CheckFileError: %d\n", __LINE__)); throw FileException(); }
 #define WPD_CHECK_FILE_SEEK_ERROR(v) if (v) { WPD_DEBUG_MSG(("X_CheckFileSeekError: %d\n", __LINE__)); throw FileException(); }
-#define WPD_CHECK_FILE_READ_ERROR(v,num_elements) if (v != num_elements) { WPD_DEBUG_MSG(("X_CheckFileReadElementError: %d\n", __LINE__)); throw FileException(); }
+#define WPD_CHECK_FILE_READ_ERROR(v,num_elements) if (v != num_elements) {\
+ WPD_DEBUG_MSG(("X_CheckFileReadElementError: %d\n", __LINE__)); throw FileException(); }
 
 #define DELETEP(m) if (m) { delete m; m = 0; }
 
@@ -62,38 +63,38 @@
 
 // add more of these as needed for byteswapping
 // (the 8-bit functions are just there to make things consistent)
-unsigned char readU8(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
-unsigned short readU16(librevenge::RVNGInputStream *input, WPXEncryption *encryption, bool bigendian=false);
-signed short readS16(librevenge::RVNGInputStream *input, WPXEncryption *encryption, bool bigendian=false);
-unsigned readU32(librevenge::RVNGInputStream *input, WPXEncryption *encryption, bool bigendian=false);
+uint8_t readU8(WPXInputStream *input, WPXEncryption *encryption);
+uint16_t readU16(WPXInputStream *input, WPXEncryption *encryption, bool bigendian=false);
+int16_t readS16(WPXInputStream *input, WPXEncryption *encryption, bool bigendian=false);
+uint32_t readU32(WPXInputStream *input, WPXEncryption *encryption, bool bigendian=false);
 
-librevenge::RVNGString readPascalString(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
-librevenge::RVNGString readCString(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+WPXString readPascalString(WPXInputStream *input, WPXEncryption *encryption);
+WPXString readCString(WPXInputStream *input, WPXEncryption *encryption);
 
-void appendUCS4(librevenge::RVNGString &str, unsigned ucs4);
+void appendUCS4(WPXString &str, uint32_t ucs4);
 
 // Various helper structures for the libwpd parser..
 
-int extendedCharacterWP6ToUCS4(unsigned char character, unsigned char characterSet,
-                               const unsigned **chars);
+int extendedCharacterWP6ToUCS4(uint8_t character, uint8_t characterSet,
+                               const uint32_t **chars);
 
-int extendedCharacterWP5ToUCS4(unsigned char character, unsigned char characterSet,
-                               const unsigned **chars);
+int extendedCharacterWP5ToUCS4(uint8_t character, uint8_t characterSet,
+                               const uint32_t **chars);
 
-int appleWorldScriptToUCS4(unsigned short character, const unsigned **chars);
+int appleWorldScriptToUCS4(uint16_t character, const uint32_t **chars);
 
-int extendedCharacterWP42ToUCS4(unsigned char character, const unsigned **chars);
+int extendedCharacterWP42ToUCS4(uint8_t character, const uint32_t **chars);
 
-unsigned short fixedPointToWPUs(const unsigned fixedPointNumber);
-double fixedPointToDouble(const unsigned fixedPointNumber);
-double wpuToFontPointSize(const unsigned short wpuNumber);
+uint16_t fixedPointToWPUs(const uint32_t fixedPointNumber);
+double fixedPointToDouble(const uint32_t fixedPointNumber);
+double wpuToFontPointSize(const uint16_t wpuNumber);
 
 enum WPXFileType { WP6_DOCUMENT, WP5_DOCUMENT, WP42_DOCUMENT, OTHER };
 enum WPXNumberingType { ARABIC, LOWERCASE, UPPERCASE, LOWERCASE_ROMAN, UPPERCASE_ROMAN };
 enum WPXNoteType { FOOTNOTE, ENDNOTE };
 enum WPXHeaderFooterType { HEADER, FOOTER };
 enum WPXHeaderFooterInternalType { HEADER_A, HEADER_B, FOOTER_A, FOOTER_B, DUMMY };
-enum WPXHeaderFooterOccurrence { ODD, EVEN, ALL, NEVER };
+enum WPXHeaderFooterOccurence { ODD, EVEN, ALL, NEVER };
 enum WPXPageNumberPosition { PAGENUMBER_POSITION_NONE = 0, PAGENUMBER_POSITION_TOP_LEFT, PAGENUMBER_POSITION_TOP_CENTER,
                              PAGENUMBER_POSITION_TOP_RIGHT, PAGENUMBER_POSITION_TOP_LEFT_AND_RIGHT,
                              PAGENUMBER_POSITION_BOTTOM_LEFT, PAGENUMBER_POSITION_BOTTOM_CENTER,
@@ -146,10 +147,10 @@ enum WPXSubDocumentType { WPX_SUBDOCUMENT_NONE, WPX_SUBDOCUMENT_HEADER_FOOTER, W
 #define WPX_TABLE_POSITION_ABSOLUTE_FROM_LEFT_MARGIN 0x04
 
 // TABLE CELL BORDER bits
-const unsigned char WPX_TABLE_CELL_LEFT_BORDER_OFF = 0x01;
-const unsigned char WPX_TABLE_CELL_RIGHT_BORDER_OFF = 0x02;
-const unsigned char WPX_TABLE_CELL_TOP_BORDER_OFF = 0x04;
-const unsigned char WPX_TABLE_CELL_BOTTOM_BORDER_OFF = 0x08;
+const uint8_t WPX_TABLE_CELL_LEFT_BORDER_OFF = 0x01;
+const uint8_t WPX_TABLE_CELL_RIGHT_BORDER_OFF = 0x02;
+const uint8_t WPX_TABLE_CELL_TOP_BORDER_OFF = 0x04;
+const uint8_t WPX_TABLE_CELL_BOTTOM_BORDER_OFF = 0x08;
 
 // BREAK bits
 #define WPX_PAGE_BREAK 0x00
@@ -166,14 +167,14 @@ const unsigned char WPX_TABLE_CELL_BOTTOM_BORDER_OFF = 0x08;
 typedef struct _RGBSColor RGBSColor;
 struct _RGBSColor
 {
-	_RGBSColor(unsigned char r, unsigned char g, unsigned char b, unsigned char s);
-	_RGBSColor(unsigned short red, unsigned short green, unsigned short blue); // Construct
+	_RGBSColor(uint8_t r, uint8_t g, uint8_t b, uint8_t s);
+	_RGBSColor(uint16_t red, uint16_t green, uint16_t blue); // Construct
 	// RBBSColor from double precision RGB color used by WP3.x for Mac
 	_RGBSColor(); // initializes all values to 0
-	unsigned char m_r;
-	unsigned char m_g;
-	unsigned char m_b;
-	unsigned char m_s;
+	uint8_t m_r;
+	uint8_t m_g;
+	uint8_t m_b;
+	uint8_t m_s;
 };
 
 typedef struct _WPXColumnDefinition WPXColumnDefinition;
@@ -189,8 +190,8 @@ typedef struct _WPXColumnProperties WPXColumnProperties;
 struct _WPXColumnProperties
 {
 	_WPXColumnProperties();
-	unsigned m_attributes;
-	unsigned char m_alignment;
+	uint32_t m_attributes;
+	uint8_t m_alignment;
 };
 
 typedef struct _WPXTabStop WPXTabStop;
@@ -199,8 +200,8 @@ struct _WPXTabStop
 	_WPXTabStop();
 	double m_position;
 	WPXTabAlignment m_alignment;
-	unsigned m_leaderCharacter;
-	unsigned char m_leaderNumSpaces;
+	uint32_t m_leaderCharacter;
+	uint8_t m_leaderNumSpaces;
 };
 
 // Various exceptions: libwpd does not propagate exceptions externally..
@@ -236,11 +237,11 @@ class WrongPasswordException
 // Various usefull, but cheesey functions
 
 int _extractNumericValueFromRoman(const char romanChar);
-int _extractDisplayReferenceNumberFromBuf(const librevenge::RVNGString &buf, const WPXNumberingType listType);
-WPXNumberingType _extractWPXNumberingTypeFromBuf(const librevenge::RVNGString &buf, const WPXNumberingType putativeWPXNumberingType);
-librevenge::RVNGString _numberingTypeToString(WPXNumberingType t);
-extern const unsigned macRomanCharacterMap[];
-librevenge::RVNGString doubleToString(const double value);
+int _extractDisplayReferenceNumberFromBuf(const WPXString &buf, const WPXNumberingType listType);
+WPXNumberingType _extractWPXNumberingTypeFromBuf(const WPXString &buf, const WPXNumberingType putativeWPXNumberingType);
+WPXString _numberingTypeToString(WPXNumberingType t);
+extern const uint32_t macRomanCharacterMap[];
+WPXString doubleToString(const double value);
 
 #endif /* LIBWPD_INTERNAL_H */
 /* vim:set shiftwidth=4 softtabstop=4 noexpandtab: */

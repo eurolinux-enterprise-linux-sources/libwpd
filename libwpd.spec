@@ -1,40 +1,42 @@
-%global apiversion 0.10
+%global apiversion 0.9
+%global streamname %{name}-stream
 
 Name: libwpd
-Summary: A library for import of WordPerfect documents
-Version: 0.10.0
-Release: 2%{?dist}
+Summary: Library for reading and converting WordPerfect documents
+Version: 0.9.9
+Release: 1%{?dist}
 Source: http://downloads.sourceforge.net/%{name}/%{name}-%{version}.tar.xz
+Group: System Environment/Libraries
 URL: http://libwpd.sf.net/
 License: LGPLv2+ or MPLv2.0
 
+BuildRequires: cppunit-devel
 BuildRequires: doxygen
-BuildRequires: help2man
-BuildRequires: pkgconfig(librevenge-0.0)
-BuildRequires: pkgconfig(zlib)
-
-Patch0: 0001-Resolves-rhbz-1643752-bounds-check-m_currentTable-ac.patch
+BuildRequires: zlib-devel
 
 %description
-%{name} is a library for import of WordPerfect documents.
+Library that handles Word Perfect documents.
 
 %package tools
-Summary: Tools to transform WordPerfect documents into other formats
+Summary: Tools to transform WordPerfect Documents into other formats
+Group: Applications/Publishing
 Requires: %{name}%{?_isa} = %{version}-%{release}
 
 %description tools
-Tools to transform WordPerfect documents into other formats.
+Tools to transform WordPerfect Documents into other formats.
 Currently supported: HTML, raw, text.
 
 %package devel
 Requires: %{name}%{?_isa} = %{version}-%{release}
 Summary: Files for developing with libwpd
+Group: Development/Libraries
 
 %description devel
 Includes and definitions for developing with libwpd.
 
 %package doc
 Summary: Documentation of %{name} API
+Group: Documentation
 BuildArch: noarch
 
 %description doc
@@ -42,20 +44,14 @@ The %{name}-doc package contains API documentation for %{name}.
 
 %prep
 %setup -q
-%patch0 -p1 -b .CVE-2018-19208
 
 chmod -x docs/%{name}.dia
 
 %build
-%configure --disable-static --disable-werror --disable-silent-rules
+%configure --disable-static --disable-werror
 sed -i 's|^hardcode_libdir_flag_spec=.*|hardcode_libdir_flag_spec=""|g' libtool
 sed -i 's|^runpath_var=LD_RUN_PATH|runpath_var=DIE_RPATH_DIE|g' libtool
-make %{?_smp_mflags}
-
-export LD_LIBRARY_PATH=`pwd`/src/lib/.libs${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
-help2man -N -n 'debug the conversion library' -o wpd2raw.1 ./src/conv/raw/.libs/wpd2raw
-help2man -N -n 'convert WordPerfect document into HTML' -o wpd2html.1 ./src/conv/html/.libs/wpd2html
-help2man -N -n 'convert WordPerfect document into plain text' -o wpd2text.1 ./src/conv/text/.libs/wpd2text
+make %{?_smp_mflags} V=1
 
 %install
 make DESTDIR=$RPM_BUILD_ROOT install
@@ -63,8 +59,8 @@ rm -f $RPM_BUILD_ROOT/%{_libdir}/*.la
 # we install API docs directly from build
 rm -rf $RPM_BUILD_ROOT/%{_docdir}/%{name}
 
-install -m 0755 -d %{buildroot}/%{_mandir}/man1
-install -m 0644 wpd2*.1 %{buildroot}/%{_mandir}/man1
+%check
+LD_LIBRARY_PATH=../lib/.libs make check
 
 %post -p /sbin/ldconfig
 
@@ -73,19 +69,19 @@ install -m 0644 wpd2*.1 %{buildroot}/%{_mandir}/man1
 %files
 %doc COPYING.LGPL COPYING.MPL CREDITS README
 %{_libdir}/%{name}-%{apiversion}.so.*
+%{_libdir}/%{streamname}-%{apiversion}.so.*
 
 %files tools
 %{_bindir}/wpd2html
 %{_bindir}/wpd2raw
 %{_bindir}/wpd2text
-%{_mandir}/man1/wpd2html.1*
-%{_mandir}/man1/wpd2raw.1*
-%{_mandir}/man1/wpd2text.1*
 
 %files devel
 %doc HACKING TODO
 %{_libdir}/%{name}-%{apiversion}.so
+%{_libdir}/%{streamname}-%{apiversion}.so
 %{_libdir}/pkgconfig/%{name}-%{apiversion}.pc
+%{_libdir}/pkgconfig/%{streamname}-%{apiversion}.pc
 %{_includedir}/%{name}-%{apiversion}
 
 %files doc
@@ -95,18 +91,6 @@ install -m 0644 wpd2*.1 %{buildroot}/%{_mandir}/man1
 %doc docs/%{name}.png
 
 %changelog
-* Fri Nov 16 2018 Caolán McNamara <caolanm@redhat.com> - 0.10.0-2
-- Resolves: rhbz#1650535 CVE-2018-19208
-
-* Fri Apr 17 2015 David Tardon <dtardon@redhat.com> - 0.10.0-1
-- Resolves: rhbz#1207766 rebase to 0.10.0
-
-* Fri Jan 24 2014 Daniel Mach <dmach@redhat.com> - 0.9.9-3
-- Mass rebuild 2014-01-24
-
-* Fri Dec 27 2013 Daniel Mach <dmach@redhat.com> - 0.9.9-2
-- Mass rebuild 2013-12-27
-
 * Mon Aug 19 2013 David Tardon <dtardon@redhat.com> - 0.9.9-1
 - new release
 

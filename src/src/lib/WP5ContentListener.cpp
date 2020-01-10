@@ -43,7 +43,7 @@ _WP5ContentParsingState::~_WP5ContentParsingState()
 {
 }
 
-WP5ContentListener::WP5ContentListener(std::list<WPXPageSpan> &pageList, std::vector<WP5SubDocument *> &subDocuments, librevenge::RVNGTextInterface *documentInterface) :
+WP5ContentListener::WP5ContentListener(std::list<WPXPageSpan> &pageList, std::vector<WP5SubDocument *> &subDocuments, WPXDocumentInterface *documentInterface) :
 	WP5Listener(),
 	WPXContentListener(pageList, documentInterface),
 	m_parseState(new WP5ContentParsingState),
@@ -63,15 +63,15 @@ WP5ContentListener::~WP5ContentListener()
  public 'HLListenerImpl' functions
 *****************************************/
 
-void WP5ContentListener::insertCharacter(unsigned character)
+void WP5ContentListener::insertCharacter(uint32_t character)
 {
-	unsigned tmpCharacter = _mapNonUnicodeCharacter(character);
+	uint32_t tmpCharacter = _mapNonUnicodeCharacter(character);
 	if (!m_ps->m_isSpanOpened)
 		_openSpan();
 	appendUCS4(m_parseState->m_textBuffer, tmpCharacter);
 }
 
-void WP5ContentListener::insertTab(unsigned char tabType, double tabPosition)
+void WP5ContentListener::insertTab(uint8_t tabType, double tabPosition)
 {
 	bool tmpHasTabPositionInformation = true;
 	if (tabPosition >= (double)((double)0xFFFE/(double)WPX_NUM_WPUS_PER_INCH) || tabPosition == 0.0)
@@ -166,7 +166,7 @@ void WP5ContentListener::insertTab(unsigned char tabType, double tabPosition)
 	}
 }
 
-void WP5ContentListener::insertIndent(unsigned char indentType, double indentPosition)
+void WP5ContentListener::insertIndent(uint8_t indentType, double indentPosition)
 {
 	bool tmpHasIndentPositionInformation = true;
 	if (indentPosition >= (double)((double)0xFFFE/(double)WPX_NUM_WPUS_PER_INCH) || indentPosition == 0.0)
@@ -237,7 +237,7 @@ void WP5ContentListener::insertEOL()
 	}
 }
 
-void WP5ContentListener::defineTable(unsigned char position, unsigned short leftOffset)
+void WP5ContentListener::defineTable(uint8_t position, uint16_t leftOffset)
 {
 	if (!isUndoOn())
 	{
@@ -272,8 +272,8 @@ void WP5ContentListener::defineTable(unsigned char position, unsigned short left
 	}
 }
 
-void WP5ContentListener::addTableColumnDefinition(unsigned width, unsigned /* leftGutter */,
-                                                  unsigned /* rightGutter */, unsigned attributes, unsigned char alignment)
+void WP5ContentListener::addTableColumnDefinition(uint32_t width, uint32_t /* leftGutter */,
+        uint32_t /* rightGutter */, uint32_t attributes, uint8_t alignment)
 {
 	if (!isUndoOn())
 	{
@@ -318,7 +318,7 @@ void WP5ContentListener::startTable()
 	}
 }
 
-void WP5ContentListener::insertRow(unsigned short rowHeight, bool isMinimumHeight, bool isHeaderRow)
+void WP5ContentListener::insertRow(uint16_t rowHeight, bool isMinimumHeight, bool isHeaderRow)
 {
 	if (!isUndoOn())
 	{
@@ -328,10 +328,10 @@ void WP5ContentListener::insertRow(unsigned short rowHeight, bool isMinimumHeigh
 	}
 }
 
-void WP5ContentListener::insertCell(unsigned char colSpan, unsigned char rowSpan, unsigned char borderBits,
+void WP5ContentListener::insertCell(uint8_t colSpan, uint8_t rowSpan, uint8_t borderBits,
                                     const RGBSColor *cellFgColor, const RGBSColor *cellBgColor,
                                     const RGBSColor *cellBorderColor, WPXVerticalAlignment cellVerticalAlignment,
-                                    bool useCellAttributes, unsigned cellAttributes)
+                                    bool useCellAttributes, uint32_t cellAttributes)
 {
 	if (!isUndoOn())
 	{
@@ -369,13 +369,13 @@ void WP5ContentListener::endTable()
  public 'parser' functions
 *****************************************/
 
-void WP5ContentListener::attributeChange(bool isOn, unsigned char attribute)
+void WP5ContentListener::attributeChange(bool isOn, uint8_t attribute)
 {
 	if (!isUndoOn())
 	{
 		_closeSpan();
 
-		unsigned textAttributeBit = 0;
+		uint32_t textAttributeBit = 0;
 
 		// FIXME: handle all the possible attribute bits
 		switch (attribute)
@@ -439,13 +439,13 @@ void WP5ContentListener::attributeChange(bool isOn, unsigned char attribute)
 	}
 }
 
-void WP5ContentListener::marginChange(unsigned char side, unsigned short margin)
+void WP5ContentListener::marginChange(uint8_t side, uint16_t margin)
 {
 	if (!isUndoOn())
 	{
 		double marginInch = (double)((double)margin/ (double)WPX_NUM_WPUS_PER_INCH);
 
-		switch (side)
+		switch(side)
 		{
 		case WPX_LEFT:
 			if (m_ps->m_numColumns > 1)
@@ -484,7 +484,7 @@ void WP5ContentListener::marginChange(unsigned char side, unsigned short margin)
 	}
 }
 
-void WP5ContentListener::characterColorChange(unsigned char red, unsigned char green, unsigned char blue)
+void WP5ContentListener::characterColorChange(uint8_t red, uint8_t green, uint8_t blue)
 {
 	if (!isUndoOn())
 	{
@@ -495,7 +495,7 @@ void WP5ContentListener::characterColorChange(unsigned char red, unsigned char g
 	}
 }
 
-void WP5ContentListener::setFont(const librevenge::RVNGString &fontName, double fontSize)
+void WP5ContentListener::setFont(const WPXString &fontName, double fontSize)
 {
 	if (!isUndoOn())
 	{
@@ -505,7 +505,7 @@ void WP5ContentListener::setFont(const librevenge::RVNGString &fontName, double 
 	}
 }
 
-void WP5ContentListener::setTabs(const std::vector<WPXTabStop> &tabStops, unsigned short tabOffset)
+void WP5ContentListener::setTabs(const std::vector<WPXTabStop> &tabStops, uint16_t tabOffset)
 {
 	if (!isUndoOn())
 	{
@@ -515,7 +515,7 @@ void WP5ContentListener::setTabs(const std::vector<WPXTabStop> &tabStops, unsign
 }
 
 
-void WP5ContentListener::insertNoteReference(const librevenge::RVNGString &noteReference)
+void WP5ContentListener::insertNoteReference(const WPXString &noteReference)
 {
 	if (!isUndoOn() && !m_ps->m_isNote)
 	{
@@ -539,8 +539,8 @@ void WP5ContentListener::insertNote(WPXNoteType noteType, const WP5SubDocument *
 		int number = _extractDisplayReferenceNumberFromBuf(m_parseState->m_noteReference, numberingType);
 		m_parseState->m_noteReference.clear();
 
-		librevenge::RVNGPropertyList propList;
-		propList.insert("librevenge:number", number);
+		WPXPropertyList propList;
+		propList.insert("libwpd:number", number);
 
 		if (noteType == FOOTNOTE)
 			m_documentInterface->openFootnote(propList);
@@ -558,7 +558,7 @@ void WP5ContentListener::insertNote(WPXNoteType noteType, const WP5SubDocument *
 }
 
 void WP5ContentListener::_handleSubDocument(const WPXSubDocument *subDocument, WPXSubDocumentType subDocumentType,
-                                            WPXTableList /* tableList */, unsigned /* nextTableIndice */)
+        WPXTableList /* tableList */, unsigned /* nextTableIndice */)
 {
 	// save our old parsing state on our "stack"
 	WP5ContentParsingState *oldParseState = m_parseState;
@@ -594,20 +594,20 @@ void WP5ContentListener::_handleSubDocument(const WPXSubDocument *subDocument, W
 	m_parseState = oldParseState;
 }
 
-void WP5ContentListener::headerFooterGroup(unsigned char /* headerFooterType */, unsigned char /* occurrenceBits */,
-                                           WP5SubDocument *subDocument)
+void WP5ContentListener::headerFooterGroup(uint8_t /* headerFooterType */, uint8_t /* occurenceBits */,
+        WP5SubDocument *subDocument)
 {
 	if (subDocument)
 		m_subDocuments.push_back(subDocument);
 }
 
-void WP5ContentListener::setDefaultFont(const librevenge::RVNGString &fontName, double fontSize)
+void WP5ContentListener::setDefaultFont(const WPXString &fontName, double fontSize)
 {
 	m_defaultFontName = fontName;
 	m_defaultFontSize = fontSize;
 }
 
-void WP5ContentListener::boxOn(unsigned char positionAndType, unsigned char alignment, unsigned short width, unsigned short height, unsigned short x, unsigned short y)
+void WP5ContentListener::boxOn(uint8_t positionAndType, uint8_t alignment, uint16_t width, uint16_t height, uint16_t x, uint16_t y)
 {
 	/*
 	Paragraph:
@@ -659,15 +659,15 @@ void WP5ContentListener::boxOn(unsigned char positionAndType, unsigned char alig
 	else
 		_flushText();
 
-	librevenge::RVNGPropertyList propList;
+	WPXPropertyList propList;
 
 	propList.insert("svg:height", (double)((double)height/(double)WPX_NUM_WPUS_PER_INCH));
 	propList.insert("svg:width", (double)((double)width/(double)WPX_NUM_WPUS_PER_INCH));
 
-	if (alignment & 0x80)
-		propList.insert("style:wrap", "dynamic");
+	if ( alignment & 0x80 )
+		propList.insert( "style:wrap", "dynamic" );
 	else
-		propList.insert("style:wrap", "none");
+		propList.insert( "style:wrap", "none" );
 
 
 	switch (positionAndType & 0x03)
@@ -686,22 +686,22 @@ void WP5ContentListener::boxOn(unsigned char positionAndType, unsigned char alig
 	}
 
 	propList.insert("style:vertical-rel", "page-content");
-	switch ((positionAndType &  0x1c) >> 2)
+	switch ( (positionAndType &  0x1c) >> 2 )
 	{
 	case 0x00:
-		propList.insert("svg:height", (double)(m_ps->m_pageFormLength - m_ps->m_pageMarginTop - m_ps->m_pageMarginBottom));
-		propList.insert("style:vertical-rel", "page-content");
-		propList.insert("style:vertical-pos", "middle");
+		propList.insert("svg:height", (double)(m_ps->m_pageFormLength - m_ps->m_pageMarginTop - m_ps->m_pageMarginBottom ) );
+		propList.insert("style:vertical-rel", "page-content" );
+		propList.insert("style:vertical-pos", "middle" );
 		break;
 	case 0x01:
-		if (y == 0.0)
-			propList.insert("style:vertical-pos", "top");
+		if ( y == 0.0)
+			propList.insert("style:vertical-pos", "top" );
 		else
 		{
-			propList.insert("style:vertical-pos", "from-top");
+			propList.insert("style:vertical-pos", "from-top" );
 			double newPosition = (double)((double)y/(double)WPX_NUM_WPUS_PER_INCH);
 			if (newPosition > (double)(m_ps->m_pageFormLength - m_ps->m_pageMarginTop - m_ps->m_pageMarginBottom
-			                           - (double)height/(double)WPX_NUM_WPUS_PER_INCH))
+			                           - (double)height/(double)WPX_NUM_WPUS_PER_INCH) )
 			{
 				newPosition = (double)(m_ps->m_pageFormLength - m_ps->m_pageMarginTop - m_ps->m_pageMarginBottom
 				                       - (double)height/(double)WPX_NUM_WPUS_PER_INCH);
@@ -711,14 +711,14 @@ void WP5ContentListener::boxOn(unsigned char positionAndType, unsigned char alig
 		break;
 	case 0x02:
 		if (y == 0.0)
-			propList.insert("style:vertical-pos", "middle");
+			propList.insert("style:vertical-pos", "middle" );
 		else
 		{
-			propList.insert("style:vertical-pos", "from-top");
+			propList.insert("style:vertical-pos", "from-top" );
 			double newPosition = (double)((m_ps->m_pageFormLength - m_ps->m_pageMarginTop - m_ps->m_pageMarginBottom
 			                               - (double)height/(double)WPX_NUM_WPUS_PER_INCH)/2.0);
 			if (newPosition > (double)(m_ps->m_pageFormLength - m_ps->m_pageMarginTop - m_ps->m_pageMarginBottom
-			                           - (double)height/(double)WPX_NUM_WPUS_PER_INCH))
+			                           - (double)height/(double)WPX_NUM_WPUS_PER_INCH) )
 			{
 				newPosition = (double)(m_ps->m_pageFormLength - m_ps->m_pageMarginTop - m_ps->m_pageMarginBottom
 				                       - (double)height/(double)WPX_NUM_WPUS_PER_INCH);
@@ -728,14 +728,14 @@ void WP5ContentListener::boxOn(unsigned char positionAndType, unsigned char alig
 		break;
 	case 0x03:
 		if (y == 0.0)
-			propList.insert("style:vertical-pos", "bottom");
+			propList.insert("style:vertical-pos", "bottom" );
 		else
 		{
-			propList.insert("style:vertical-pos", "from-top");
+			propList.insert("style:vertical-pos", "from-top" );
 			double newPosition = (double)(m_ps->m_pageFormLength - m_ps->m_pageMarginTop - m_ps->m_pageMarginBottom
 			                              - (double)height/(double)WPX_NUM_WPUS_PER_INCH + (double)y/(double)WPX_NUM_WPUS_PER_INCH);
 			if (newPosition > (double)(m_ps->m_pageFormLength - m_ps->m_pageMarginTop - m_ps->m_pageMarginBottom
-			                           - (double)height/(double)WPX_NUM_WPUS_PER_INCH))
+			                           - (double)height/(double)WPX_NUM_WPUS_PER_INCH) )
 			{
 				newPosition = (double)(m_ps->m_pageFormLength - m_ps->m_pageMarginTop - m_ps->m_pageMarginBottom
 				                       - (double)height/(double)WPX_NUM_WPUS_PER_INCH);
@@ -744,50 +744,50 @@ void WP5ContentListener::boxOn(unsigned char positionAndType, unsigned char alig
 		}
 		break;
 	case 0x04:
-		propList.insert("style:vertical-rel", "page");
-		propList.insert("style:vertical-pos", "from-top");
+		propList.insert("style:vertical-rel", "page" );
+		propList.insert("style:vertical-pos", "from-top" );
 		propList.insert("svg:y", (double)((double)y/(double)WPX_NUM_WPUS_PER_INCH));
 		break;
 	default:
 		break;
 	}
 
-	propList.insert("style:horizontal-rel", "page-content");
-	switch (alignment & 0x03)
+	propList.insert("style:horizontal-rel", "page-content" );
+	switch ( alignment & 0x03 )
 	{
 	case 0x00:
-		if (x == 0.0)
-			propList.insert("style:horizontal-pos", "left");
+		if ( x == 0.0 )
+			propList.insert( "style:horizontal-pos", "left");
 		else
 		{
-			propList.insert("style:horizontal-pos", "from-left");
-			propList.insert("svg:x", (double)((double)x/(double)WPX_NUM_WPUS_PER_INCH));
+			propList.insert( "style:horizontal-pos", "from-left");
+			propList.insert( "svg:x", (double)((double)x/(double)WPX_NUM_WPUS_PER_INCH));
 		}
 		break;
 	case 0x01:
-		if (x == 0.0)
-			propList.insert("style:horizontal-pos", "right");
+		if ( x == 0.0 )
+			propList.insert( "style:horizontal-pos", "right");
 		else
 		{
-			propList.insert("style:horizontal-pos", "from-left");
-			propList.insert("svg:x", (double)(m_ps->m_pageFormWidth - m_ps->m_pageMarginLeft - m_ps->m_pageMarginRight
-			                                  - (double)width/(double)WPX_NUM_WPUS_PER_INCH + (double)x/(double)WPX_NUM_WPUS_PER_INCH));
+			propList.insert( "style:horizontal-pos", "from-left");
+			propList.insert( "svg:x", (double)(m_ps->m_pageFormWidth - m_ps->m_pageMarginLeft - m_ps->m_pageMarginRight
+			                                   - (double)width/(double)WPX_NUM_WPUS_PER_INCH + (double)x/(double)WPX_NUM_WPUS_PER_INCH));
 		}
 		break;
 	case 0x02:
-		if (x == 0.0)
-			propList.insert("style:horizontal-pos", "center");
+		if ( x == 0.0 )
+			propList.insert( "style:horizontal-pos", "center" );
 		else
 		{
-			propList.insert("style:horizontal-pos", "from-left");
-			propList.insert("svg:x", (double)((m_ps->m_pageFormWidth - m_ps->m_pageMarginLeft - m_ps->m_pageMarginRight
-			                                   - (double)width/(double)WPX_NUM_WPUS_PER_INCH)/2.0 + (double)x/(double)WPX_NUM_WPUS_PER_INCH));
+			propList.insert( "style:horizontal-pos", "from-left");
+			propList.insert( "svg:x", (double)((m_ps->m_pageFormWidth - m_ps->m_pageMarginLeft - m_ps->m_pageMarginRight
+			                                    - (double)width/(double)WPX_NUM_WPUS_PER_INCH)/2.0 + (double)x/(double)WPX_NUM_WPUS_PER_INCH));
 		}
 		break;
 	case 0x03:
-		propList.insert("svg:width", (double)(m_ps->m_pageFormWidth - m_ps->m_pageMarginLeft - m_ps->m_pageMarginRight));
-		propList.insert("style:horizontal-rel", "page-content");
-		propList.insert("style:horizontal-pos", "center");
+		propList.insert("svg:width", (double)(m_ps->m_pageFormWidth - m_ps->m_pageMarginLeft - m_ps->m_pageMarginRight ) );
+		propList.insert("style:horizontal-rel", "page-content" );
+		propList.insert("style:horizontal-pos", "center" );
 		break;
 	default:
 		break;
@@ -806,17 +806,16 @@ void WP5ContentListener::boxOff()
 	}
 }
 
-void WP5ContentListener::insertGraphicsData(const librevenge::RVNGBinaryData *data)
+void WP5ContentListener::insertGraphicsData(const WPXBinaryData *data)
 {
 	if (isUndoOn() || !m_parseState->m_isFrameOpened)
 		return;
 
 	if (data)
 	{
-		librevenge::RVNGPropertyList propList;
-		propList.insert("librevenge:mime-type", "image/x-wpg");
-		propList.insert("office:binary-data", *data);
-		m_documentInterface->insertBinaryObject(propList);
+		WPXPropertyList propList;
+		propList.insert("libwpd:mimetype", "image/x-wpg");
+		m_documentInterface->insertBinaryObject(propList, *data);
 	}
 }
 

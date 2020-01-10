@@ -44,12 +44,12 @@
 #include "WP1FileStructure.h"
 #include "libwpd_internal.h"
 
-WP1FixedLengthGroup::WP1FixedLengthGroup(unsigned char group)
+WP1FixedLengthGroup::WP1FixedLengthGroup(uint8_t group)
 	: m_group(group)
 {
 }
 
-WP1FixedLengthGroup *WP1FixedLengthGroup::constructFixedLengthGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption, unsigned char group)
+WP1FixedLengthGroup *WP1FixedLengthGroup::constructFixedLengthGroup(WPXInputStream *input, WPXEncryption *encryption, uint8_t group)
 {
 	switch (group)
 	{
@@ -87,7 +87,7 @@ WP1FixedLengthGroup *WP1FixedLengthGroup::constructFixedLengthGroup(librevenge::
 	}
 }
 
-void WP1FixedLengthGroup::_read(librevenge::RVNGInputStream *input, WPXEncryption *encryption)
+void WP1FixedLengthGroup::_read(WPXInputStream *input, WPXEncryption *encryption)
 {
 	long startPosition = input->tell();
 
@@ -99,7 +99,7 @@ void WP1FixedLengthGroup::_read(librevenge::RVNGInputStream *input, WPXEncryptio
 
 		_readContents(input, encryption);
 
-		input->seek((startPosition + size - 2), librevenge::RVNG_SEEK_SET);
+		input->seek((startPosition + size - 2), WPX_SEEK_SET);
 		if (m_group != readU8(input, encryption))
 		{
 			WPD_DEBUG_MSG(("WordPerfect: Possible corruption detected. Bailing out!\n"));

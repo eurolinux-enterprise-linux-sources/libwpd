@@ -34,30 +34,30 @@
 class WP5PageFormatGroup : public WP5VariableLengthGroup
 {
 public:
-	WP5PageFormatGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	WP5PageFormatGroup(WPXInputStream *input, WPXEncryption *encryption);
 	~WP5PageFormatGroup();
-	void _readContents(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	void _readContents(WPXInputStream *input, WPXEncryption *encryption);
 	void parse(WP5Listener *listener);
 
 private:
 	// variables needed for subgroup 1 (Left/Right Margin Set)
-	unsigned short m_leftMargin;
-	unsigned short m_rightMargin;
+	uint16_t m_leftMargin;
+	uint16_t m_rightMargin;
 	// variable needed for subgroup 2 (Spacing Set)
 	double m_lineSpacing;
 	// variables needed for subbroup 4 (Tab Set)
 	std::vector<WPXTabStop> m_tabStops;
-	unsigned short m_marginOffset;
+	uint16_t m_marginOffset;
 	// variables needed for subgroup 5 (Top/Bottom Margin Set)
-	unsigned short m_topMargin;
-	unsigned short m_bottomMargin;
+	uint16_t m_topMargin;
+	uint16_t m_bottomMargin;
 	// variables needed for subgroup 6 (Justification)
-	unsigned char m_justification;
+	uint8_t m_justification;
 	// variable needed for subgroup 7 (Suppress Page Characteristics)
-	unsigned char m_suppressCode;
+	uint8_t m_suppressCode;
 	// variables needed for subgroup 11 (Form)
-	unsigned short m_formLength;
-	unsigned short m_formWidth;
+	uint16_t m_formLength;
+	uint16_t m_formWidth;
 	WPXFormOrientation m_formOrientation;
 
 };

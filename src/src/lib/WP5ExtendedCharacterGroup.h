@@ -34,15 +34,15 @@
 class WP5ExtendedCharacterGroup : public WP5FixedLengthGroup
 {
 public:
-	WP5ExtendedCharacterGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption, unsigned char groupID);
+	WP5ExtendedCharacterGroup(WPXInputStream *input, WPXEncryption *encryption, uint8_t groupID);
 	void parse(WP5Listener *listener);
 
 protected:
-	void _readContents(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	void _readContents(WPXInputStream *input, WPXEncryption *encryption);
 
 private:
-	unsigned char m_character;
-	unsigned char m_characterSet;
+	uint8_t m_character;
+	uint8_t m_characterSet;
 };
 
 #endif /* WP5EXTENDEDCHARACTERGROUP_H */

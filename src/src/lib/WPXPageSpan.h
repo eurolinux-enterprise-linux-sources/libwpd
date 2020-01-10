@@ -38,10 +38,10 @@
 class WPXHeaderFooter
 {
 public:
-	WPXHeaderFooter(const WPXHeaderFooterType headerFooterType, const WPXHeaderFooterOccurrence occurrence,
-	                const unsigned char internalType, const WPXSubDocument *subDocument, WPXTableList tableList);
-	WPXHeaderFooter(const WPXHeaderFooterType headerFooterType, const WPXHeaderFooterOccurrence occurrence,
-	                const unsigned char internalType, const WPXSubDocument *subDocument);
+	WPXHeaderFooter(const WPXHeaderFooterType headerFooterType, const WPXHeaderFooterOccurence occurence,
+	                const uint8_t internalType, const WPXSubDocument *subDocument, WPXTableList tableList);
+	WPXHeaderFooter(const WPXHeaderFooterType headerFooterType, const WPXHeaderFooterOccurence occurence,
+	                const uint8_t internalType, const WPXSubDocument *subDocument);
 	WPXHeaderFooter(const WPXHeaderFooter &headerFooter);
 	~WPXHeaderFooter();
 	WPXHeaderFooter &operator=(const WPXHeaderFooter &headerFooter);
@@ -49,11 +49,11 @@ public:
 	{
 		return m_type;
 	}
-	WPXHeaderFooterOccurrence getOccurrence() const
+	WPXHeaderFooterOccurence getOccurence() const
 	{
-		return m_occurrence;
+		return m_occurence;
 	}
-	unsigned char getInternalType() const
+	uint8_t getInternalType() const
 	{
 		return m_internalType;
 	}
@@ -68,8 +68,8 @@ public:
 
 private:
 	WPXHeaderFooterType m_type;
-	WPXHeaderFooterOccurrence m_occurrence;
-	unsigned char m_internalType; // for suppression
+	WPXHeaderFooterOccurence m_occurence;
+	uint8_t m_internalType; // for suppression
 	const WPXSubDocument *m_subDocument;  // for the actual text
 	WPXTableList m_tableList;
 };
@@ -85,7 +85,7 @@ public:
 	{
 		return m_isPageNumberSuppressed;
 	}
-	bool getHeaderFooterSuppression(const unsigned char headerFooterType) const
+	bool getHeaderFooterSuppression(const uint8_t headerFooterType) const
 	{
 		if (headerFooterType <= WPX_FOOTER_B) return m_isHeaderFooterSuppressed[headerFooterType];
 		return false;
@@ -138,7 +138,7 @@ public:
 	{
 		return m_pageNumberingFontSize;
 	}
-	librevenge::RVNGString getPageNumberingFontName() const
+	WPXString getPageNumberingFontName() const
 	{
 		return m_pageNumberingFontName;
 	}
@@ -151,13 +151,13 @@ public:
 		return m_headerFooterList;
 	}
 
-	void setHeaderFooter(const WPXHeaderFooterType type, const unsigned char headerFooterType, const WPXHeaderFooterOccurrence occurrence,
+	void setHeaderFooter(const WPXHeaderFooterType type, const uint8_t headerFooterType, const WPXHeaderFooterOccurence occurence,
 	                     const WPXSubDocument *subDocument, WPXTableList tableList);
 	void setPageNumberSuppression(const bool suppress)
 	{
 		m_isPageNumberSuppressed = suppress;
 	}
-	void setHeadFooterSuppression(const unsigned char headerFooterType, const bool suppress)
+	void setHeadFooterSuppression(const uint8_t headerFooterType, const bool suppress)
 	{
 		m_isHeaderFooterSuppressed[headerFooterType] = suppress;
 	}
@@ -206,7 +206,7 @@ public:
 	{
 		m_pageNumberingFontSize = pageNumberingFontSize;
 	}
-	void setPageNumberingFontName(const librevenge::RVNGString &pageNumberingFontName)
+	void setPageNumberingFontName(const WPXString &pageNumberingFontName)
 	{
 		m_pageNumberingFontName = pageNumberingFontName;
 	}
@@ -216,8 +216,8 @@ public:
 	}
 
 protected:
-	void _removeHeaderFooter(WPXHeaderFooterType type, WPXHeaderFooterOccurrence occurrence);
-	bool _containsHeaderFooter(WPXHeaderFooterType type, WPXHeaderFooterOccurrence occurrence);
+	void _removeHeaderFooter(WPXHeaderFooterType type, WPXHeaderFooterOccurence occurence);
+	bool _containsHeaderFooter(WPXHeaderFooterType type, WPXHeaderFooterOccurence occurence);
 
 private:
 	bool m_isHeaderFooterSuppressed[WPX_NUM_HEADER_FOOTER_TYPES];
@@ -230,7 +230,7 @@ private:
 	bool m_isPageNumberOverridden;
 	int m_pageNumberOverride;
 	WPXNumberingType m_pageNumberingType;
-	librevenge::RVNGString m_pageNumberingFontName;
+	WPXString m_pageNumberingFontName;
 	double m_pageNumberingFontSize;
 	std::vector<WPXHeaderFooter> m_headerFooterList;
 

@@ -21,9 +21,9 @@
  */
 
 #include <stdio.h>
-#include <librevenge-stream/librevenge-stream.h>
-#include <librevenge-generators/librevenge-generators.h>
+#include "HtmlDocumentGenerator.h"
 #include <libwpd/libwpd.h>
+#include <libwpd-stream/libwpd-stream.h>
 #include <string.h>
 
 #ifdef HAVE_CONFIG_H
@@ -33,8 +33,6 @@
 #ifndef VERSION
 #define VERSION "UNKNOWN VERSION"
 #endif
-
-using namespace libwpd;
 
 namespace
 {
@@ -86,7 +84,7 @@ int main(int argc, char *argv[])
 	if (!file)
 		return printUsage();
 
-	librevenge::RVNGFileStream input(file);
+	WPXFileStream input(file);
 
 	WPDConfidence confidence = WPDocument::isFileFormatSupported(&input);
 	if (confidence != WPD_CONFIDENCE_EXCELLENT && confidence != WPD_CONFIDENCE_SUPPORTED_ENCRYPTION)
@@ -107,8 +105,7 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	librevenge::RVNGString document;
-	librevenge::RVNGHTMLTextGenerator documentGenerator(document);
+	HtmlDocumentGenerator documentGenerator;
 	WPDResult error = WPDocument::parse(&input, &documentGenerator, password);
 
 	if (error == WPD_FILE_ACCESS_ERROR)
@@ -124,8 +121,6 @@ int main(int argc, char *argv[])
 
 	if (error != WPD_OK)
 		return 1;
-
-	printf("%s", document.cstr());
 
 	return 0;
 }

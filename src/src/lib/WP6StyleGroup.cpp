@@ -29,19 +29,19 @@
 #include "WP6FileStructure.h"
 #include "libwpd_internal.h"
 
-WP6StyleGroup_GlobalOnSubGroup::WP6StyleGroup_GlobalOnSubGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption) :
+WP6StyleGroup_GlobalOnSubGroup::WP6StyleGroup_GlobalOnSubGroup(WPXInputStream *input, WPXEncryption *encryption) :
 	m_hash(0), m_systemStyleNumber(0)
 {
 	m_hash = readU16(input, encryption);
 	m_systemStyleNumber = readU8(input, encryption);
 }
 
-void WP6StyleGroup_GlobalOnSubGroup::parse(WP6Listener *listener, const unsigned char /* numPrefixIDs */, unsigned short const * /* prefixIDs */) const
+void WP6StyleGroup_GlobalOnSubGroup::parse(WP6Listener *listener, const uint8_t /* numPrefixIDs */, uint16_t const * /* prefixIDs */) const
 {
 	listener->globalOn(m_systemStyleNumber);
 }
 
-WP6StyleGroup::WP6StyleGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption) :
+WP6StyleGroup::WP6StyleGroup(WPXInputStream *input, WPXEncryption *encryption) :
 	WP6VariableLengthGroup(),
 	m_subGroupData(0)
 {
@@ -55,7 +55,7 @@ WP6StyleGroup::~WP6StyleGroup()
 
 }
 
-void WP6StyleGroup::_readContents(librevenge::RVNGInputStream *input, WPXEncryption *encryption)
+void WP6StyleGroup::_readContents(WPXInputStream *input, WPXEncryption *encryption)
 {
 	// this group can contain different kinds of data, thus we need to read
 	// the contents accordingly

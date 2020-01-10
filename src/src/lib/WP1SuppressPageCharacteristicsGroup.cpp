@@ -26,7 +26,7 @@
 #include "WP1SuppressPageCharacteristicsGroup.h"
 #include "libwpd_internal.h"
 
-WP1SuppressPageCharacteristicsGroup::WP1SuppressPageCharacteristicsGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption, unsigned char group) :
+WP1SuppressPageCharacteristicsGroup::WP1SuppressPageCharacteristicsGroup(WPXInputStream *input, WPXEncryption *encryption, uint8_t group) :
 	WP1FixedLengthGroup(group),
 	m_suppressCode(0)
 {
@@ -37,7 +37,7 @@ WP1SuppressPageCharacteristicsGroup::~WP1SuppressPageCharacteristicsGroup()
 {
 }
 
-void WP1SuppressPageCharacteristicsGroup::_readContents(librevenge::RVNGInputStream *input, WPXEncryption *encryption)
+void WP1SuppressPageCharacteristicsGroup::_readContents(WPXInputStream *input, WPXEncryption *encryption)
 {
 	m_suppressCode = readU8(input, encryption);
 }

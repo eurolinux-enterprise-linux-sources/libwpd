@@ -81,8 +81,10 @@ build_triplet = @build@
 host_triplet = @host@
 subdir = src/lib
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
-	$(srcdir)/libwpd.rc.in $(top_srcdir)/depcomp \
-	$(libwpd_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_include_HEADERS)
+	$(srcdir)/libwpd.rc.in $(srcdir)/libwpd-stream.rc.in \
+	$(top_srcdir)/depcomp \
+	$(libwpd_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_include_HEADERS) \
+	$(am__libwpd_stream_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_include_HEADERS_DIST)
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
 	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
@@ -92,7 +94,7 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
-CONFIG_CLEAN_FILES = libwpd.rc
+CONFIG_CLEAN_FILES = libwpd.rc libwpd-stream.rc
 CONFIG_CLEAN_VPATH_FILES =
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
@@ -122,9 +124,9 @@ am__uninstall_files_from_dir = { \
          $(am__cd) "$$dir" && rm -f $$files; }; \
   }
 am__installdirs = "$(DESTDIR)$(libdir)" \
-	"$(DESTDIR)$(libwpd_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_includedir)"
+	"$(DESTDIR)$(libwpd_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_includedir)" \
+	"$(DESTDIR)$(libwpd_stream_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_includedir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
-am__DEPENDENCIES_1 =
 am_libwpd_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_la_OBJECTS =  \
 	libwpd_internal.lo libwpd_math.lo WP1BottomMarginGroup.lo \
 	WP1CenterTextGroup.lo WP1ContentListener.lo \
@@ -194,10 +196,11 @@ am_libwpd_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_la_OBJECTS =  \
 	WP6SubDocument.lo WP6TabGroup.lo WP6TableStylePacket.lo \
 	WP6UndoGroup.lo WP6UnsupportedFixedLengthGroup.lo \
 	WP6UnsupportedVariableLengthGroup.lo WP6VariableLengthGroup.lo \
-	WPDocument.lo WPXContentListener.lo WPXEncryption.lo \
-	WPXHeader.lo WPXListener.lo WPXMemoryStream.lo WPXPageSpan.lo \
-	WPXParser.lo WPXStylesListener.lo WPXSubDocument.lo \
-	WPXTable.lo
+	WPDocument.lo WPXBinaryData.lo WPXContentListener.lo \
+	WPXEncryption.lo WPXHeader.lo WPXListener.lo \
+	WPXMemoryStream.lo WPXPageSpan.lo WPXParser.lo WPXProperty.lo \
+	WPXPropertyList.lo WPXPropertyListVector.lo WPXString.lo \
+	WPXStylesListener.lo WPXSubDocument.lo WPXTable.lo
 libwpd_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_la_OBJECTS = $(am_libwpd_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -208,6 +211,23 @@ libwpd_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_la_LINK = $(LIBTOOL) \
 	--mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
 	$(libwpd_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_la_LDFLAGS) \
 	$(LDFLAGS) -o $@
+am__DEPENDENCIES_1 =
+am__libwpd_stream_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_la_SOURCES_DIST =  \
+	WPXStreamImplementation.cpp WPXOLEStream.cpp WPXZipStream.cpp \
+	WPXOLEStream.h WPXZipStream.h
+am__objects_1 = WPXStreamImplementation.lo WPXOLEStream.lo \
+	WPXZipStream.lo
+@WITH_LIBWPD_STREAM_TRUE@am_libwpd_stream_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_la_OBJECTS =  \
+@WITH_LIBWPD_STREAM_TRUE@	$(am__objects_1)
+libwpd_stream_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_la_OBJECTS = $(am_libwpd_stream_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_la_OBJECTS)
+libwpd_stream_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_la_LINK =  \
+	$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
+	$(CXXFLAGS) \
+	$(libwpd_stream_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_la_LDFLAGS) \
+	$(LDFLAGS) -o $@
+@WITH_LIBWPD_STREAM_TRUE@am_libwpd_stream_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_la_rpath =  \
+@WITH_LIBWPD_STREAM_TRUE@	-rpath $(libdir)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -261,15 +281,22 @@ am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
 SOURCES =  \
-	$(libwpd_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_la_SOURCES)
+	$(libwpd_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_la_SOURCES) \
+	$(libwpd_stream_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_la_SOURCES)
 DIST_SOURCES =  \
-	$(libwpd_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_la_SOURCES)
+	$(libwpd_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_la_SOURCES) \
+	$(am__libwpd_stream_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_la_SOURCES_DIST)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
-HEADERS = $(libwpd_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_include_HEADERS)
+am__libwpd_stream_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_include_HEADERS_DIST =  \
+	$(top_srcdir)/inc/libwpd-stream/libwpd-stream.h \
+	$(top_srcdir)/inc/libwpd-stream/WPXStream.h \
+	$(top_srcdir)/inc/libwpd-stream/WPXStreamImplementation.h
+HEADERS = $(libwpd_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_include_HEADERS) \
+	$(libwpd_stream_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_include_HEADERS)
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) $(LISP)
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = @ACLOCAL@
@@ -315,6 +342,7 @@ LDFLAGS = @LDFLAGS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
+LIBWPD_STREAM_WIN32_RESOURCE = @LIBWPD_STREAM_WIN32_RESOURCE@
 LIBWPD_WIN32_RESOURCE = @LIBWPD_WIN32_RESOURCE@
 LIPO = @LIPO@
 LN_S = @LN_S@
@@ -343,12 +371,6 @@ PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
 RANLIB = @RANLIB@
-REVENGE_CFLAGS = @REVENGE_CFLAGS@
-REVENGE_GENERATORS_CFLAGS = @REVENGE_GENERATORS_CFLAGS@
-REVENGE_GENERATORS_LIBS = @REVENGE_GENERATORS_LIBS@
-REVENGE_LIBS = @REVENGE_LIBS@
-REVENGE_STREAM_CFLAGS = @REVENGE_STREAM_CFLAGS@
-REVENGE_STREAM_LIBS = @REVENGE_STREAM_LIBS@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
@@ -362,6 +384,8 @@ WPD_MAJOR_VERSION = @WPD_MAJOR_VERSION@
 WPD_MICRO_VERSION = @WPD_MICRO_VERSION@
 WPD_MINOR_VERSION = @WPD_MINOR_VERSION@
 WPD_VERSION = @WPD_VERSION@
+ZLIB_CFLAGS = @ZLIB_CFLAGS@
+ZLIB_LIBS = @ZLIB_LIBS@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -420,16 +444,28 @@ top_srcdir = @top_srcdir@
 @PLATFORM_WIN32_TRUE@no_undefined = -no-undefined
 @OS_WIN32_FALSE@version_info = -version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)
 @OS_WIN32_TRUE@version_info = -version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) -avoid-version
+@DEF_FILES_FALSE@export_symbols_libwpd = 
+@DEF_FILES_TRUE@export_symbols_libwpd = -export-symbols libwpd-@WPD_MAJOR_VERSION@.@WPD_MINOR_VERSION@.def
+@DEF_FILES_FALSE@export_symbols_libwpd_stream = 
+@DEF_FILES_TRUE@export_symbols_libwpd_stream = -export-symbols libwpd-stream-@WPD_MAJOR_VERSION@.@WPD_MINOR_VERSION@.def
+@WITH_LIBWPD_STREAM_FALSE@target_libwpd_stream = 
+@WITH_LIBWPD_STREAM_TRUE@target_libwpd_stream = libwpd-stream-@WPD_MAJOR_VERSION@.@WPD_MINOR_VERSION@.la
 lib_LTLIBRARIES = libwpd-@WPD_MAJOR_VERSION@.@WPD_MINOR_VERSION@.la $(target_libwpd_stream)
 libwpd_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_includedir = $(includedir)/libwpd-@WPD_MAJOR_VERSION@.@WPD_MINOR_VERSION@/libwpd
 libwpd_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_include_HEADERS = \
 	$(top_srcdir)/inc/libwpd/libwpd.h \
-	$(top_srcdir)/inc/libwpd/WPDocument.h
+	$(top_srcdir)/inc/libwpd/WPDocument.h \
+	$(top_srcdir)/inc/libwpd/WPXBinaryData.h \
+	$(top_srcdir)/inc/libwpd/WPXDocumentInterface.h \
+	$(top_srcdir)/inc/libwpd/WPXProperty.h \
+	$(top_srcdir)/inc/libwpd/WPXPropertyList.h \
+	$(top_srcdir)/inc/libwpd/WPXPropertyListVector.h \
+	$(top_srcdir)/inc/libwpd/WPXString.h
 
-AM_CXXFLAGS = -I$(top_srcdir)/inc $(REVENGE_CFLAGS) $(DEBUG_CXXFLAGS) -DLIBWPD_BUILD=1
-libwpd_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_la_LIBADD = $(REVENGE_LIBS) @LIBWPD_WIN32_RESOURCE@
+AM_CXXFLAGS = -I$(top_srcdir)/inc $(DEBUG_CXXFLAGS)
+libwpd_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_la_LIBADD = @LIBWPD_WIN32_RESOURCE@
 libwpd_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_la_DEPENDENCIES = @LIBWPD_WIN32_RESOURCE@
-libwpd_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_la_LDFLAGS = $(version_info) -export-dynamic $(no_undefined)
+libwpd_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_la_LDFLAGS = $(version_info) -export-dynamic $(no_undefined) $(export_symbols_libwpd)
 libwpd_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_la_SOURCES = \
 	libwpd_internal.cpp \
 	libwpd_math.cpp \
@@ -588,6 +624,7 @@ libwpd_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_la_SOURCES = \
 	WP6UnsupportedVariableLengthGroup.cpp \
 	WP6VariableLengthGroup.cpp \
 	WPDocument.cpp \
+	WPXBinaryData.cpp \
 	WPXContentListener.cpp \
 	WPXEncryption.cpp \
 	WPXHeader.cpp \
@@ -595,11 +632,16 @@ libwpd_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_la_SOURCES = \
 	WPXMemoryStream.cpp \
 	WPXPageSpan.cpp \
 	WPXParser.cpp \
+	WPXProperty.cpp \
+	WPXPropertyList.cpp \
+	WPXPropertyListVector.cpp \
+	WPXString.cpp \
 	WPXStylesListener.cpp \
 	WPXSubDocument.cpp \
 	WPXTable.cpp \
 	libwpd_internal.h \
 	libwpd_math.h \
+	libwpd_types.h \
 	WP1BottomMarginGroup.h \
 	WP1CenterTextGroup.h \
 	WP1ContentListener.h \
@@ -767,13 +809,40 @@ libwpd_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_la_SOURCES = \
 	WPXSubDocument.h \
 	WPXTable.h
 
+libwpd_stream_headers = \
+	$(top_srcdir)/inc/libwpd-stream/libwpd-stream.h \
+	$(top_srcdir)/inc/libwpd-stream/WPXStream.h \
+	$(top_srcdir)/inc/libwpd-stream/WPXStreamImplementation.h
+
+libwpd_stream_sources = \
+	WPXStreamImplementation.cpp \
+	WPXOLEStream.cpp \
+	WPXZipStream.cpp \
+	WPXOLEStream.h \
+	WPXZipStream.h
+
+@WITH_LIBWPD_STREAM_TRUE@libwpd_stream_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_includedir = $(includedir)/libwpd-@WPD_MAJOR_VERSION@.@WPD_MINOR_VERSION@/libwpd-stream
+@WITH_LIBWPD_STREAM_TRUE@libwpd_stream_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_include_HEADERS = $(libwpd_stream_headers)
+@WITH_LIBWPD_STREAM_TRUE@libwpd_stream_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_la_LIBADD = $(ZLIB_LIBS) @LIBWPD_STREAM_WIN32_RESOURCE@
+@WITH_LIBWPD_STREAM_TRUE@libwpd_stream_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_la_DEPENDENCIES = @LIBWPD_STREAM_WIN32_RESOURCE@
+@WITH_LIBWPD_STREAM_TRUE@libwpd_stream_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_la_LDFLAGS = $(version_info) -export-dynamic $(no_undefined) $(export_symbols_libwpd_stream)
+@WITH_LIBWPD_STREAM_TRUE@libwpd_stream_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_la_SOURCES = $(libwpd_stream_sources)
+
+# Include the GSFStream.* in case we build a tarball without stream
 EXTRA_DIST = \
-	libwpd.rc.in
+	$(libwpd_stream_sources) \
+	$(libwpd_stream_headers) \
+	makefile.mk \
+	libwpd-@WPD_MAJOR_VERSION@.@WPD_MINOR_VERSION@.def \
+	libwpd.rc.in \
+	libwpd-stream-@WPD_MAJOR_VERSION@.@WPD_MINOR_VERSION@.def \
+	libwpd-stream.rc.in
 
 
 # These may be in the builddir too
 BUILD_EXTRA_DIST = \
-	libwpd.rc
+	libwpd.rc \
+	libwpd-stream.rc
 
 all: all-am
 
@@ -810,6 +879,8 @@ $(ACLOCAL_M4):  $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
 libwpd.rc: $(top_builddir)/config.status $(srcdir)/libwpd.rc.in
+	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
+libwpd-stream.rc: $(top_builddir)/config.status $(srcdir)/libwpd-stream.rc.in
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 
 install-libLTLIBRARIES: $(lib_LTLIBRARIES)
@@ -849,6 +920,9 @@ clean-libLTLIBRARIES:
 
 libwpd-@WPD_MAJOR_VERSION@.@WPD_MINOR_VERSION@.la: $(libwpd_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_la_OBJECTS) $(libwpd_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_la_DEPENDENCIES) $(EXTRA_libwpd_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_la_DEPENDENCIES) 
 	$(AM_V_CXXLD)$(libwpd_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_la_LINK) -rpath $(libdir) $(libwpd_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_la_OBJECTS) $(libwpd_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_la_LIBADD) $(LIBS)
+
+libwpd-stream-@WPD_MAJOR_VERSION@.@WPD_MINOR_VERSION@.la: $(libwpd_stream_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_la_OBJECTS) $(libwpd_stream_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_la_DEPENDENCIES) $(EXTRA_libwpd_stream_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_la_DEPENDENCIES) 
+	$(AM_V_CXXLD)$(libwpd_stream_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_la_LINK) $(am_libwpd_stream_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_la_rpath) $(libwpd_stream_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_la_OBJECTS) $(libwpd_stream_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -1011,16 +1085,24 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/WP6UnsupportedVariableLengthGroup.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/WP6VariableLengthGroup.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/WPDocument.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/WPXBinaryData.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/WPXContentListener.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/WPXEncryption.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/WPXHeader.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/WPXListener.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/WPXMemoryStream.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/WPXOLEStream.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/WPXPageSpan.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/WPXParser.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/WPXProperty.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/WPXPropertyList.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/WPXPropertyListVector.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/WPXStreamImplementation.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/WPXString.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/WPXStylesListener.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/WPXSubDocument.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/WPXTable.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/WPXZipStream.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libwpd_internal.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libwpd_math.Plo@am__quote@
 
@@ -1071,6 +1153,27 @@ uninstall-libwpd_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_includeHEADERS:
 	@list='$(libwpd_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_include_HEADERS)'; test -n "$(libwpd_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_includedir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	dir='$(DESTDIR)$(libwpd_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_includedir)'; $(am__uninstall_files_from_dir)
+install-libwpd_stream_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_includeHEADERS: $(libwpd_stream_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_include_HEADERS)
+	@$(NORMAL_INSTALL)
+	@list='$(libwpd_stream_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_include_HEADERS)'; test -n "$(libwpd_stream_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_includedir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(libwpd_stream_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_includedir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(libwpd_stream_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_includedir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_HEADER) $$files '$(DESTDIR)$(libwpd_stream_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_includedir)'"; \
+	  $(INSTALL_HEADER) $$files "$(DESTDIR)$(libwpd_stream_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_includedir)" || exit $$?; \
+	done
+
+uninstall-libwpd_stream_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_includeHEADERS:
+	@$(NORMAL_UNINSTALL)
+	@list='$(libwpd_stream_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_include_HEADERS)'; test -n "$(libwpd_stream_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_includedir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(libwpd_stream_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_includedir)'; $(am__uninstall_files_from_dir)
 tags TAGS:
 
 ctags CTAGS:
@@ -1112,7 +1215,7 @@ check-am: all-am
 check: check-am
 all-am: Makefile $(LTLIBRARIES) $(HEADERS)
 installdirs:
-	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(libwpd_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_includedir)"; do \
+	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(libwpd_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_includedir)" "$(DESTDIR)$(libwpd_stream_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_includedir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -1167,7 +1270,8 @@ info: info-am
 
 info-am:
 
-install-data-am: install-libwpd_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_includeHEADERS
+install-data-am: install-libwpd_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_includeHEADERS \
+	install-libwpd_stream_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_includeHEADERS
 
 install-dvi: install-dvi-am
 
@@ -1214,7 +1318,8 @@ ps: ps-am
 ps-am:
 
 uninstall-am: uninstall-libLTLIBRARIES \
-	uninstall-libwpd_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_includeHEADERS
+	uninstall-libwpd_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_includeHEADERS \
+	uninstall-libwpd_stream_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_includeHEADERS
 
 .MAKE: install-am install-strip
 
@@ -1227,18 +1332,24 @@ uninstall-am: uninstall-libLTLIBRARIES \
 	install-html-am install-info install-info-am \
 	install-libLTLIBRARIES \
 	install-libwpd_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_includeHEADERS \
+	install-libwpd_stream_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_includeHEADERS \
 	install-man install-pdf install-pdf-am install-ps \
 	install-ps-am install-strip installcheck installcheck-am \
 	installdirs maintainer-clean maintainer-clean-generic \
 	mostlyclean mostlyclean-compile mostlyclean-generic \
 	mostlyclean-libtool pdf pdf-am ps ps-am tags-am uninstall \
 	uninstall-am uninstall-libLTLIBRARIES \
-	uninstall-libwpd_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_includeHEADERS
+	uninstall-libwpd_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_includeHEADERS \
+	uninstall-libwpd_stream_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_includeHEADERS
 
 
 @OS_WIN32_TRUE@@LIBWPD_WIN32_RESOURCE@ : libwpd.rc $(libwpd_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_la_OBJECTS)
 @OS_WIN32_TRUE@	chmod +x $(top_srcdir)/build/win32/*compile-resource
 @OS_WIN32_TRUE@	WINDRES=@WINDRES@ $(top_srcdir)/build/win32/lt-compile-resource libwpd.rc @LIBWPD_WIN32_RESOURCE@
+
+@OS_WIN32_TRUE@@LIBWPD_STREAM_WIN32_RESOURCE@ : libwpd-stream.rc $(libwpd_stream_@WPD_MAJOR_VERSION@_@WPD_MINOR_VERSION@_la_OBJECTS)
+@OS_WIN32_TRUE@	chmod +x $(top_srcdir)/build/win32/*compile-resource && \
+@OS_WIN32_TRUE@	WINDRES=@WINDRES@ $(top_srcdir)/build/win32/lt-compile-resource libwpd-stream.rc @LIBWPD_STREAM_WIN32_RESOURCE@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

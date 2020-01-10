@@ -27,6 +27,7 @@
 #ifndef WP6PREFIXDATAPACKET_H
 #define WP6PREFIXDATAPACKET_H
 #include "WPXParser.h"
+#include "libwpd_types.h"
 
 class WP6Listener;
 class WP6PrefixIndice;
@@ -35,26 +36,26 @@ class WP6SubDocument;
 class WP6PrefixDataPacket
 {
 public:
-	WP6PrefixDataPacket(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	WP6PrefixDataPacket(WPXInputStream *input, WPXEncryption *encryption);
 	virtual ~WP6PrefixDataPacket() {}
 	virtual void parse(WP6Listener * /* listener */) const {}
 	virtual WP6SubDocument *getSubDocument() const
 	{
 		return 0;
 	}
-	unsigned getDataSize() const
+	uint32_t getDataSize() const
 	{
 		return m_dataSize;
 	}
 
-	static WP6PrefixDataPacket *constructPrefixDataPacket(librevenge::RVNGInputStream *input, WPXEncryption *encryption, WP6PrefixIndice *prefixIndice);
+	static WP6PrefixDataPacket *constructPrefixDataPacket(WPXInputStream *input, WPXEncryption *encryption, WP6PrefixIndice *prefixIndice);
 
 protected:
-	virtual void _readContents(librevenge::RVNGInputStream *input, WPXEncryption *encryption) = 0;
-	void _read(librevenge::RVNGInputStream *input, WPXEncryption *encryption, unsigned dataOffset, unsigned dataSize);
+	virtual void _readContents(WPXInputStream *input, WPXEncryption *encryption) = 0;
+	void _read(WPXInputStream *input, WPXEncryption *encryption, uint32_t dataOffset, uint32_t dataSize);
 
 private:
-	unsigned m_dataSize;
+	uint32_t m_dataSize;
 };
 
 #endif /* WP6PREFIXDATAPACKET_H */

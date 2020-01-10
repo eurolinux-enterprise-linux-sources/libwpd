@@ -31,7 +31,7 @@
 #include "WP5Listener.h"
 #include "WP5GraphicsInformationPacket.h"
 
-WP5BoxGroup::WP5BoxGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption) :
+WP5BoxGroup::WP5BoxGroup(WPXInputStream *input, WPXEncryption *encryption) :
 	WP5VariableLengthGroup(),
 	m_boxNumber(0),
 	m_positionAndType(0),
@@ -47,9 +47,9 @@ WP5BoxGroup::WP5BoxGroup(librevenge::RVNGInputStream *input, WPXEncryption *encr
 	_read(input, encryption);
 }
 
-void WP5BoxGroup::_readContents(librevenge::RVNGInputStream *input, WPXEncryption *encryption)
+void WP5BoxGroup::_readContents(WPXInputStream *input, WPXEncryption *encryption)
 {
-	switch (getSubGroup())
+	switch(getSubGroup())
 	{
 	case WP5_TOP_BOX_GROUP_FIGURE:
 		m_boxNumber = readU16(input, encryption);
@@ -59,11 +59,11 @@ void WP5BoxGroup::_readContents(librevenge::RVNGInputStream *input, WPXEncryptio
 		m_height = readU16(input, encryption);
 		m_x = readU16(input, encryption);
 		m_y = readU16(input, encryption);
-		input->seek(36, librevenge::RVNG_SEEK_CUR);
+		input->seek(36, WPX_SEEK_CUR);
 		m_boxType = readU8(input, encryption);
 		if (m_boxType == 0x80)
 		{
-			input->seek(60, librevenge::RVNG_SEEK_CUR);
+			input->seek(60, WPX_SEEK_CUR);
 			m_graphicsOffset = readU16(input, encryption);
 		}
 		break;
@@ -85,7 +85,7 @@ void WP5BoxGroup::parse(WP5Listener *listener)
 {
 	WPD_DEBUG_MSG(("WordPerfect: handling a Box group\n"));
 
-	switch (getSubGroup())
+	switch(getSubGroup())
 	{
 	case WP5_TOP_BOX_GROUP_FIGURE:
 		if (m_boxType != 0x80)

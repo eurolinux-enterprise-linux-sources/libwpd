@@ -34,16 +34,16 @@ class WP1SubDocument;
 class WP1FootnoteEndnoteGroup : public WP1VariableLengthGroup
 {
 public:
-	WP1FootnoteEndnoteGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption, unsigned char group);
+	WP1FootnoteEndnoteGroup(WPXInputStream *input, WPXEncryption *encryption, uint8_t group);
 	~WP1FootnoteEndnoteGroup();
-	void _readContents(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	void _readContents(WPXInputStream *input, WPXEncryption *encryption);
 	void parse(WP1Listener *listener);
 
 private:
 	WP1FootnoteEndnoteGroup(const WP1FootnoteEndnoteGroup &);
 	WP1FootnoteEndnoteGroup &operator=(const WP1FootnoteEndnoteGroup &);
 	WPXNoteType m_noteType;
-	unsigned short m_noteNumber;
+	uint16_t m_noteNumber;
 	WP1SubDocument *m_subDocument;
 };
 

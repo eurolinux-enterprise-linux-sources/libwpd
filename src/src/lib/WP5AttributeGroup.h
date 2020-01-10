@@ -33,31 +33,31 @@
 class WP5AttributeGroup : public WP5FixedLengthGroup
 {
 public:
-	WP5AttributeGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption, unsigned char groupID);
+	WP5AttributeGroup(WPXInputStream *input, WPXEncryption *encryption, uint8_t groupID);
 	virtual void parse(WP5Listener *listener) = 0;
-	unsigned char getAttribute() const
+	uint8_t getAttribute() const
 	{
 		return m_attribute;
 	}
 
 protected:
-	virtual void _readContents(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	virtual void _readContents(WPXInputStream *input, WPXEncryption *encryption);
 
 private:
-	unsigned char m_attribute;
+	uint8_t m_attribute;
 };
 
 class WP5AttributeOnGroup : public WP5AttributeGroup
 {
 public:
-	WP5AttributeOnGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption, unsigned char groupID);
+	WP5AttributeOnGroup(WPXInputStream *input, WPXEncryption *encryption, uint8_t groupID);
 	void parse(WP5Listener *listener);
 };
 
 class WP5AttributeOffGroup : public WP5AttributeGroup
 {
 public:
-	WP5AttributeOffGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption, unsigned char groupID);
+	WP5AttributeOffGroup(WPXInputStream *input, WPXEncryption *encryption, uint8_t groupID);
 	void parse(WP5Listener *listener);
 };
 

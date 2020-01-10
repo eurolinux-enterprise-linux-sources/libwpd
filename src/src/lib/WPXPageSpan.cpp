@@ -33,23 +33,23 @@
 const double WPX_DEFAULT_PAGE_MARGIN_TOP = 1.0;
 const double WPX_DEFAULT_PAGE_MARGIN_BOTTOM = 1.0;
 
-const unsigned char DUMMY_INTERNAL_HEADER_FOOTER = 16;
+const uint8_t DUMMY_INTERNAL_HEADER_FOOTER = 16;
 
 // precondition: 0 <= headerFooterType <= 3 (i.e.: we don't handle watermarks here)
-WPXHeaderFooter::WPXHeaderFooter(const WPXHeaderFooterType headerFooterType, const WPXHeaderFooterOccurrence occurrence,
-                                 const unsigned char internalType, const WPXSubDocument *subDocument, WPXTableList tableList) :
+WPXHeaderFooter::WPXHeaderFooter(const WPXHeaderFooterType headerFooterType, const WPXHeaderFooterOccurence occurence,
+                                 const uint8_t internalType, const WPXSubDocument *subDocument, WPXTableList tableList) :
 	m_type(headerFooterType),
-	m_occurrence(occurrence),
+	m_occurence(occurence),
 	m_internalType(internalType),
 	m_subDocument(subDocument),
 	m_tableList(tableList)
 {
 }
 
-WPXHeaderFooter::WPXHeaderFooter(const WPXHeaderFooterType headerFooterType, const WPXHeaderFooterOccurrence occurrence,
-                                 const unsigned char internalType, const WPXSubDocument *subDocument) :
+WPXHeaderFooter::WPXHeaderFooter(const WPXHeaderFooterType headerFooterType, const WPXHeaderFooterOccurence occurence,
+                                 const uint8_t internalType, const WPXSubDocument *subDocument) :
 	m_type(headerFooterType),
-	m_occurrence(occurrence),
+	m_occurence(occurence),
 	m_internalType(internalType),
 	m_subDocument(subDocument),
 	m_tableList()
@@ -58,7 +58,7 @@ WPXHeaderFooter::WPXHeaderFooter(const WPXHeaderFooterType headerFooterType, con
 
 WPXHeaderFooter::WPXHeaderFooter(const WPXHeaderFooter &headerFooter) :
 	m_type(headerFooter.getType()),
-	m_occurrence(headerFooter.getOccurrence()),
+	m_occurence(headerFooter.getOccurence()),
 	m_internalType(headerFooter.getInternalType()),
 	m_subDocument(headerFooter.getSubDocument()),
 	m_tableList(headerFooter.getTableList())
@@ -70,7 +70,7 @@ WPXHeaderFooter &WPXHeaderFooter::operator=(const WPXHeaderFooter &headerFooter)
 	if (this != &headerFooter)
 	{
 		m_type = headerFooter.getType();
-		m_occurrence = headerFooter.getOccurrence();
+		m_occurence = headerFooter.getOccurence();
 		m_internalType = headerFooter.getInternalType();
 		m_subDocument = headerFooter.getSubDocument();
 		m_tableList = headerFooter.getTableList();
@@ -134,11 +134,11 @@ WPXPageSpan::~WPXPageSpan()
 }
 
 
-void WPXPageSpan::setHeaderFooter(const WPXHeaderFooterType type, const unsigned char headerFooterType, const WPXHeaderFooterOccurrence occurrence,
+void WPXPageSpan::setHeaderFooter(const WPXHeaderFooterType type, const uint8_t headerFooterType, const WPXHeaderFooterOccurence occurence,
                                   const  WPXSubDocument *subDocument, WPXTableList tableList)
 {
-	WPXHeaderFooter headerFooter(type, occurrence, headerFooterType, subDocument, tableList);
-	switch (occurrence)
+	WPXHeaderFooter headerFooter(type, occurence, headerFooterType, subDocument, tableList);
+	switch (occurence)
 	{
 	case ALL:
 	case NEVER:
@@ -158,7 +158,7 @@ void WPXPageSpan::setHeaderFooter(const WPXHeaderFooterType type, const unsigned
 		break;
 	}
 
-	if ((occurrence != NEVER) && (subDocument))
+	if ((occurence != NEVER) && (subDocument))
 		m_headerFooterList.push_back(headerFooter);
 
 	bool containsHFLeft = _containsHeaderFooter(type, ODD);
@@ -179,11 +179,11 @@ void WPXPageSpan::setHeaderFooter(const WPXHeaderFooterType type, const unsigned
 	}
 }
 
-void WPXPageSpan::_removeHeaderFooter(WPXHeaderFooterType type, WPXHeaderFooterOccurrence occurrence)
+void WPXPageSpan::_removeHeaderFooter(WPXHeaderFooterType type, WPXHeaderFooterOccurence occurence)
 {
 	for (std::vector<WPXHeaderFooter>::iterator iter = m_headerFooterList.begin(); iter != m_headerFooterList.end(); ++iter)
 	{
-		if ((*iter).getType() == type && (*iter).getOccurrence() == occurrence)
+		if ((*iter).getType() == type && (*iter).getOccurence() == occurence)
 		{
 			WPD_DEBUG_MSG(("WordPerfect: Removing header/footer element of type: %i since it is identical to %i\n",(*iter).getType(), type));
 			m_headerFooterList.erase(iter);
@@ -192,11 +192,11 @@ void WPXPageSpan::_removeHeaderFooter(WPXHeaderFooterType type, WPXHeaderFooterO
 	}
 }
 
-bool WPXPageSpan::_containsHeaderFooter(WPXHeaderFooterType type, WPXHeaderFooterOccurrence occurrence)
+bool WPXPageSpan::_containsHeaderFooter(WPXHeaderFooterType type, WPXHeaderFooterOccurence occurence)
 {
 	for (std::vector<WPXHeaderFooter>::iterator iter = m_headerFooterList.begin(); iter != m_headerFooterList.end(); ++iter)
 	{
-		if ((*iter).getType()==type && (*iter).getOccurrence()==occurrence)
+		if ((*iter).getType()==type && (*iter).getOccurence()==occurence)
 			return true;
 	}
 
@@ -207,8 +207,8 @@ inline bool operator==(const WPXHeaderFooter &headerFooter1, const WPXHeaderFoot
 {
 	return ((headerFooter1.getType() == headerFooter2.getType()) &&
 	        (headerFooter1.getSubDocument() == headerFooter2.getSubDocument()) &&
-	        (headerFooter1.getOccurrence() == headerFooter2.getOccurrence()) &&
-	        (headerFooter1.getInternalType() == headerFooter2.getInternalType()));
+	        (headerFooter1.getOccurence() == headerFooter2.getOccurence()) &&
+	        (headerFooter1.getInternalType() == headerFooter2.getInternalType()) );
 }
 
 bool operator==(const WPXPageSpan &page1, const WPXPageSpan &page2)
@@ -234,7 +234,7 @@ bool operator==(const WPXPageSpan &page1, const WPXPageSpan &page2)
 	        page1.getPageNumberingFontSize() != page2.getPageNumberingFontSize())
 		return false;
 
-	for (unsigned char i=0; i<WPX_NUM_HEADER_FOOTER_TYPES; i++)
+	for (uint8_t i=0; i<WPX_NUM_HEADER_FOOTER_TYPES; i++)
 	{
 		if (page1.getHeaderFooterSuppression(i) != page2.getHeaderFooterSuppression(i))
 			return false;

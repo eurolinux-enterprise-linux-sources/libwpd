@@ -24,7 +24,6 @@
  * Corel Corporation or Corel Corporation Limited."
  */
 
-#include <librevenge/librevenge.h>
 #include "WPXHeader.h"
 #include "WPXParser.h"
 #include "WP1Parser.h"
@@ -37,15 +36,13 @@
 #include "WPXEncryption.h"
 #include "libwpd_internal.h"
 
-using namespace libwpd;
-
 /**
 \mainpage libwpd documentation
 This document contains both the libwpd API specification and the normal libwpd
 documentation.
 \section api_docs libwpd API documentation
 The external libwpd API is provided by the WPDocument class. This class, combined
-with the librevenge::RVNGTextInterface class, are the only two classes that will be of interest
+with the WPXDocumentInterface class, are the only two classes that will be of interest
 for the application programmer using libwpd.
 \section lib_docs libwpd documentation
 If you are interrested in the structure of libwpd itself, this whole document
@@ -60,20 +57,20 @@ Analyzes the content of an input stream to see if it can be parsed
 \return A confidence value which represents the likelyhood that the content from
 the input stream can be parsed
 */
-WPDAPI WPDConfidence WPDocument::isFileFormatSupported(librevenge::RVNGInputStream *input)
+WPDConfidence WPDocument::isFileFormatSupported(WPXInputStream *input)
 {
 	WPD_DEBUG_MSG(("WPDocument::isFileFormatSupported()\n"));
 
 	// by-pass the OLE stream (if it exists) and returns the (sub) stream with the
 	// WordPerfect document.
-	librevenge::RVNGInputStream *document = 0;
-	bool isStructuredDocument = false;
+	WPXInputStream *document = 0;
+	bool isDocumentOLE = false;
 
-	if (input->isStructured())
+	if (input->isOLEStream())
 	{
-		document = input->getSubStreamByName("PerfectOffice_MAIN");
+		document = input->getDocumentOLEStream("PerfectOffice_MAIN");
 		if (document)
-			isStructuredDocument = true;
+			isDocumentOLE = true;
 		else
 			return WPD_CONFIDENCE_NONE;
 	}
@@ -136,7 +133,7 @@ WPDAPI WPDConfidence WPDocument::isFileFormatSupported(librevenge::RVNGInputStre
 
 
 		// dispose of the reference to the ole input stream, if we allocated one
-		if (document && isStructuredDocument)
+		if (document && isDocumentOLE)
 			DELETEP(document);
 
 		return confidence;
@@ -146,7 +143,7 @@ WPDAPI WPDConfidence WPDocument::isFileFormatSupported(librevenge::RVNGInputStre
 		WPD_DEBUG_MSG(("File Exception trapped\n"));
 
 		// dispose of the reference to the ole input stream, if we allocated one
-		if (document && isStructuredDocument)
+		if (document && isDocumentOLE)
 			DELETEP(document);
 
 		return WPD_CONFIDENCE_NONE;
@@ -156,7 +153,7 @@ WPDAPI WPDConfidence WPDocument::isFileFormatSupported(librevenge::RVNGInputStre
 		WPD_DEBUG_MSG(("Unknown Exception trapped\n"));
 
 		// dispose of the reference to the ole input stream, if we allocated one
-		if (document && isStructuredDocument)
+		if (document && isDocumentOLE)
 			DELETEP(document);
 
 		return WPD_CONFIDENCE_NONE;
@@ -169,14 +166,14 @@ Checks whether the given password was used to encrypt the document
 \param password The password used to protect the document or NULL if the document is not protected
 \return A value which indicates between the given password and the password that was used to protect the document
 */
-WPDAPI WPDPasswordMatch WPDocument::verifyPassword(librevenge::RVNGInputStream *input, const char *password)
+WPDPasswordMatch WPDocument::verifyPassword(WPXInputStream *input, const char *password)
 {
 	if (!password)
 		return WPD_PASSWORD_MATCH_DONTKNOW;
 	if (!input)
 		return WPD_PASSWORD_MATCH_DONTKNOW;
 
-	input->seek(0, librevenge::RVNG_SEEK_SET);
+	input->seek(0, WPX_SEEK_SET);
 
 	WPDPasswordMatch passwordMatch = WPD_PASSWORD_MATCH_NONE;
 	WPXEncryption encryption(password);
@@ -187,14 +184,14 @@ WPDAPI WPDPasswordMatch WPDocument::verifyPassword(librevenge::RVNGInputStream *
 
 	// by-pass the OLE stream (if it exists) and returns the (sub) stream with the
 	// WordPerfect document.
-	librevenge::RVNGInputStream *document = 0;
-	bool isStructuredDocument = false;
+	WPXInputStream *document = 0;
+	bool isDocumentOLE = false;
 
-	if (input->isStructured())
+	if (input->isOLEStream())
 	{
-		document = input->getSubStreamByName("PerfectOffice_MAIN");
+		document = input->getDocumentOLEStream("PerfectOffice_MAIN");
 		if (document)
-			isStructuredDocument = true;
+			isDocumentOLE = true;
 		else
 			return WPD_PASSWORD_MATCH_NONE;
 	}
@@ -222,7 +219,7 @@ WPDAPI WPDPasswordMatch WPDocument::verifyPassword(librevenge::RVNGInputStream *
 
 
 		// dispose of the reference to the ole input stream, if we allocated one
-		if (document && isStructuredDocument)
+		if (document && isDocumentOLE)
 			DELETEP(document);
 
 		return passwordMatch;
@@ -232,7 +229,7 @@ WPDAPI WPDPasswordMatch WPDocument::verifyPassword(librevenge::RVNGInputStream *
 		WPD_DEBUG_MSG(("File Exception trapped\n"));
 
 		// dispose of the reference to the ole input stream, if we allocated one
-		if (document && isStructuredDocument)
+		if (document && isDocumentOLE)
 			DELETEP(document);
 
 		return WPD_PASSWORD_MATCH_NONE;
@@ -242,7 +239,7 @@ WPDAPI WPDPasswordMatch WPDocument::verifyPassword(librevenge::RVNGInputStream *
 		WPD_DEBUG_MSG(("Unknown Exception trapped\n"));
 
 		// dispose of the reference to the ole input stream, if we allocated one
-		if (document && isStructuredDocument)
+		if (document && isDocumentOLE)
 			DELETEP(document);
 
 		return WPD_PASSWORD_MATCH_NONE;
@@ -251,16 +248,16 @@ WPDAPI WPDPasswordMatch WPDocument::verifyPassword(librevenge::RVNGInputStream *
 
 /**
 Parses the input stream content. It will make callbacks to the functions provided by a
-librevenge::RVNGTextInterface class implementation when needed. This is often commonly called the
+WPXDocumentInterface class implementation when needed. This is often commonly called the
 'main parsing routine'.
 \param input The input stream
-\param textInterface A librevenge::RVNGTextInterface implementation
+\param documentInterface A WPXDocumentInterface implementation
 \param password The password used to protect the document or NULL if the document
 is not protected
 \return A value that indicates whether the conversion was successful and in case it
 was not, it indicates the reason of the error
 */
-WPDAPI WPDResult WPDocument::parse(librevenge::RVNGInputStream *input, librevenge::RVNGTextInterface *textInterface, const char *password)
+WPDResult WPDocument::parse(WPXInputStream *input, WPXDocumentInterface *documentInterface, const char *password)
 {
 	if (!input)
 		return WPD_FILE_ACCESS_ERROR;
@@ -268,22 +265,22 @@ WPDAPI WPDResult WPDocument::parse(librevenge::RVNGInputStream *input, libreveng
 	if (password && verifyPassword(input, password) != WPD_PASSWORD_MATCH_OK)
 		return WPD_PASSWORD_MISSMATCH_ERROR;
 
-	input->seek(0, librevenge::RVNG_SEEK_SET);
+	input->seek(0, WPX_SEEK_SET);
 
 	WPXParser *parser = 0;
 
 	// by-pass the OLE stream (if it exists) and returns the (sub) stream with the
 	// WordPerfect document.
 
-	librevenge::RVNGInputStream *document = 0;
-	bool isStructuredDocument = false;
+	WPXInputStream *document = 0;
+	bool isDocumentOLE = false;
 
 	WPD_DEBUG_MSG(("WPDocument::parse()\n"));
-	if (input->isStructured())
+	if (input->isOLEStream())
 	{
-		document = input->getSubStreamByName("PerfectOffice_MAIN");
+		document = input->getDocumentOLEStream("PerfectOffice_MAIN");
 		if (document)
-			isStructuredDocument = true;
+			isDocumentOLE = true;
 		else
 			return WPD_OLE_ERROR;
 	}
@@ -309,7 +306,7 @@ WPDAPI WPDResult WPDocument::parse(librevenge::RVNGInputStream *input, libreveng
 					if (password)
 						encryption = new WPXEncryption(password, 16);
 					parser = new WP5Parser(document, header, encryption);
-					parser->parse(textInterface);
+					parser->parse(documentInterface);
 					break;
 				case 0x02: // WP6
 					WPD_DEBUG_MSG(("WordPerfect: Using the WP6 parser.\n"));
@@ -319,7 +316,7 @@ WPDAPI WPDResult WPDocument::parse(librevenge::RVNGInputStream *input, libreveng
 						throw UnsupportedEncryptionException();
 					}
 					parser = new WP6Parser(document, header, encryption);
-					parser->parse(textInterface);
+					parser->parse(documentInterface);
 					break;
 				default:
 					// unhandled file format
@@ -337,7 +334,7 @@ WPDAPI WPDResult WPDocument::parse(librevenge::RVNGInputStream *input, libreveng
 					if (password)
 						encryption = new WPXEncryption(password, header->getDocumentOffset());
 					parser = new WP3Parser(document, header, encryption);
-					parser->parse(textInterface);
+					parser->parse(documentInterface);
 					break;
 				default:
 					// unhandled file format
@@ -366,7 +363,7 @@ WPDAPI WPDResult WPDocument::parse(librevenge::RVNGInputStream *input, libreveng
 				if (password)
 					encryption = new WPXEncryption(password, 6);
 				parser = new WP1Parser(document, encryption);
-				parser->parse(textInterface);
+				parser->parse(documentInterface);
 				DELETEP(parser);
 			}
 			else if (WP42Heuristics::isWP42FileFormat(document, password) == WPD_CONFIDENCE_EXCELLENT)
@@ -376,10 +373,10 @@ WPDAPI WPDResult WPDocument::parse(librevenge::RVNGInputStream *input, libreveng
 				if (password)
 				{
 					encryption = new WPXEncryption(password, 6);
-					input->seek(6, librevenge::RVNG_SEEK_SET);
+					input->seek(6, WPX_SEEK_SET);
 				}
 				parser = new WP42Parser(document, encryption);
-				parser->parse(textInterface);
+				parser->parse(documentInterface);
 				DELETEP(parser);
 			}
 			else
@@ -410,13 +407,13 @@ WPDAPI WPDResult WPDocument::parse(librevenge::RVNGInputStream *input, libreveng
 	}
 
 	DELETEP(parser);
-	if (document && isStructuredDocument)
+	if (document && isDocumentOLE)
 		DELETEP(document);
 
 	return error;
 }
 
-WPDAPI WPDResult WPDocument::parseSubDocument(librevenge::RVNGInputStream *input, librevenge::RVNGTextInterface *textInterface, WPDFileFormat fileFormat)
+WPDResult WPDocument::parseSubDocument(WPXInputStream *input, WPXDocumentInterface *documentInterface, WPDFileFormat fileFormat)
 {
 	WPXParser *parser = 0;
 
@@ -449,7 +446,7 @@ WPDAPI WPDResult WPDocument::parseSubDocument(librevenge::RVNGInputStream *input
 		}
 
 		if (parser)
-			parser->parseSubDocument(textInterface);
+			parser->parseSubDocument(documentInterface);
 	}
 	catch (FileException)
 	{

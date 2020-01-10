@@ -32,7 +32,7 @@
 #include "WP1StylesListener.h"
 #include "WP1ContentListener.h"
 
-WP1Parser::WP1Parser(librevenge::RVNGInputStream *input, WPXEncryption *encryption) :
+WP1Parser::WP1Parser(WPXInputStream *input, WPXEncryption *encryption) :
 	WPXParser(input, 0, encryption)
 {
 }
@@ -41,14 +41,14 @@ WP1Parser::~WP1Parser()
 {
 }
 
-void WP1Parser::parse(librevenge::RVNGInputStream *input, WPXEncryption *encryption, WP1Listener *listener)
+void WP1Parser::parse(WPXInputStream *input, WPXEncryption *encryption, WP1Listener *listener)
 {
 	listener->startDocument();
 
 	if (encryption)
-		input->seek(6, librevenge::RVNG_SEEK_SET);
+		input->seek(6, WPX_SEEK_SET);
 	else
-		input->seek(0, librevenge::RVNG_SEEK_SET);
+		input->seek(0, WPX_SEEK_SET);
 
 	WPD_DEBUG_MSG(("WordPerfect: Starting document body parse (position = %ld)\n",(long)input->tell()));
 
@@ -58,14 +58,14 @@ void WP1Parser::parse(librevenge::RVNGInputStream *input, WPXEncryption *encrypt
 }
 
 // parseDocument: parses a document body (may call itself recursively, on other streams, or itself)
-void WP1Parser::parseDocument(librevenge::RVNGInputStream *input, WPXEncryption *encryption, WP1Listener *listener)
+void WP1Parser::parseDocument(WPXInputStream *input, WPXEncryption *encryption, WP1Listener *listener)
 {
-	while (!input->isEnd())
+	while (!input->atEOS())
 	{
-		unsigned char readVal;
+		uint8_t readVal;
 		readVal = readU8(input, encryption);
 
-		if (readVal < (unsigned char)0x20)
+		if (readVal < (uint8_t)0x20)
 		{
 			WPD_DEBUG_MSG(("Offset: %i, Handling Control Character 0x%2x\n", (unsigned int)input->tell(), readVal));
 
@@ -91,12 +91,12 @@ void WP1Parser::parseDocument(librevenge::RVNGInputStream *input, WPXEncryption 
 				break;
 			}
 		}
-		else if (readVal >= (unsigned char)0x20 && readVal <= (unsigned char)0x7F)
+		else if (readVal >= (uint8_t)0x20 && readVal <= (uint8_t)0x7F)
 		{
 			// normal ASCII characters
-			listener->insertCharacter(readVal);
+			listener->insertCharacter( readVal );
 		}
-		else if (readVal >= (unsigned char)0x80 && readVal <= (unsigned char)0xBF)
+		else if (readVal >= (uint8_t)0x80 && readVal <= (uint8_t)0xBF)
 		{
 			WPD_DEBUG_MSG(("Offset: %i, Handling Single Character Function 0x%2x\n", (unsigned int)input->tell(), readVal));
 
@@ -171,7 +171,7 @@ void WP1Parser::parseDocument(librevenge::RVNGInputStream *input, WPXEncryption 
 				break;
 			}
 		}
-		else if (readVal >= (unsigned char)0xC0 && readVal <= (unsigned char)0xFE)
+		else if (readVal >= (uint8_t)0xC0 && readVal <= (uint8_t)0xFE)
 		{
 			WP1Part *part = WP1Part::constructPart(input, encryption, readVal);
 			if (part)
@@ -185,9 +185,9 @@ void WP1Parser::parseDocument(librevenge::RVNGInputStream *input, WPXEncryption 
 	}
 }
 
-void WP1Parser::parse(librevenge::RVNGTextInterface *documentInterface)
+void WP1Parser::parse(WPXDocumentInterface *documentInterface)
 {
-	librevenge::RVNGInputStream *input = getInput();
+	WPXInputStream *input = getInput();
 	WPXEncryption *encryption = getEncryption();
 	std::list<WPXPageSpan> pageList;
 	std::vector<WP1SubDocument *> subDocuments;
@@ -224,17 +224,17 @@ void WP1Parser::parse(librevenge::RVNGTextInterface *documentInterface)
 		for (std::vector<WP1SubDocument *>::iterator iterSubDoc = subDocuments.begin(); iterSubDoc != subDocuments.end(); ++iterSubDoc)
 		{
 			if (*iterSubDoc)
-				delete(*iterSubDoc);
+				delete (*iterSubDoc);
 		}
 	}
-	catch (FileException)
+	catch(FileException)
 	{
 		WPD_DEBUG_MSG(("WordPerfect: File Exception. Parse terminated prematurely."));
 
 		for (std::vector<WP1SubDocument *>::iterator iterSubDoc = subDocuments.begin(); iterSubDoc != subDocuments.end(); ++iterSubDoc)
 		{
 			if (*iterSubDoc)
-				delete(*iterSubDoc);
+				delete (*iterSubDoc);
 		}
 
 		throw FileException();
@@ -242,12 +242,12 @@ void WP1Parser::parse(librevenge::RVNGTextInterface *documentInterface)
 
 }
 
-void WP1Parser::parseSubDocument(librevenge::RVNGTextInterface *documentInterface)
+void WP1Parser::parseSubDocument(WPXDocumentInterface *documentInterface)
 {
 	std::list<WPXPageSpan> pageList;
 	std::vector<WP1SubDocument *> subDocuments;
 
-	librevenge::RVNGInputStream *input = getInput();
+	WPXInputStream *input = getInput();
 
 	try
 	{
@@ -256,7 +256,7 @@ void WP1Parser::parseSubDocument(librevenge::RVNGTextInterface *documentInterfac
 		parseDocument(input, 0, &stylesListener);
 		stylesListener.endSubDocument();
 
-		input->seek(0, librevenge::RVNG_SEEK_SET);
+		input->seek(0, WPX_SEEK_SET);
 
 		WP1ContentListener listener(pageList, subDocuments, documentInterface);
 		listener.startSubDocument();
@@ -265,14 +265,14 @@ void WP1Parser::parseSubDocument(librevenge::RVNGTextInterface *documentInterfac
 
 		for (std::vector<WP1SubDocument *>::iterator iterSubDoc = subDocuments.begin(); iterSubDoc != subDocuments.end(); ++iterSubDoc)
 			if (*iterSubDoc)
-				delete(*iterSubDoc);
+				delete (*iterSubDoc);
 	}
-	catch (FileException)
+	catch(FileException)
 	{
 		WPD_DEBUG_MSG(("WordPerfect: File Exception. Parse terminated prematurely."));
 		for (std::vector<WP1SubDocument *>::iterator iterSubDoc = subDocuments.begin(); iterSubDoc != subDocuments.end(); ++iterSubDoc)
 			if (*iterSubDoc)
-				delete(*iterSubDoc);
+				delete (*iterSubDoc);
 
 		throw FileException();
 	}

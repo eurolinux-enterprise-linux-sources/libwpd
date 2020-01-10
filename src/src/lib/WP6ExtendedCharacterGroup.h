@@ -33,15 +33,15 @@
 class WP6ExtendedCharacterGroup : public WP6FixedLengthGroup
 {
 public:
-	WP6ExtendedCharacterGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption, unsigned char groupID);
+	WP6ExtendedCharacterGroup(WPXInputStream *input, WPXEncryption *encryption, uint8_t groupID);
 	void parse(WP6Listener *listener);
 
 protected:
-	void _readContents(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	void _readContents(WPXInputStream *input, WPXEncryption *encryption);
 
 private:
-	unsigned char m_character;
-	unsigned char m_characterSet;
+	uint8_t m_character;
+	uint8_t m_characterSet;
 };
 
 #endif /* WP6EXTENDEDCHARACTERGROUP_H */

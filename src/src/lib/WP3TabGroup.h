@@ -32,15 +32,15 @@
 class WP3TabGroup : public WP3FixedLengthGroup
 {
 public:
-	WP3TabGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption, unsigned char groupID);
+	WP3TabGroup(WPXInputStream *input, WPXEncryption *encryption, uint8_t groupID);
 	void parse(WP3Listener *listener);
 
 protected:
-	void _readContents(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	void _readContents(WPXInputStream *input, WPXEncryption *encryption);
 
 private:
-	unsigned char m_subGroup;
-	unsigned char m_modeType;
+	uint8_t m_subGroup;
+	uint8_t m_modeType;
 	double m_position;
 };
 

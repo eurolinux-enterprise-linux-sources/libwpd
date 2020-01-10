@@ -26,7 +26,7 @@
 #include "WP42ExtendedCharacterGroup.h"
 #include "libwpd_internal.h"
 
-WP42ExtendedCharacterGroup::WP42ExtendedCharacterGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption, unsigned char group) :
+WP42ExtendedCharacterGroup::WP42ExtendedCharacterGroup(WPXInputStream *input, WPXEncryption *encryption, uint8_t group) :
 	WP42MultiByteFunctionGroup(group),
 	m_extendedCharacter(0)
 {
@@ -37,7 +37,7 @@ WP42ExtendedCharacterGroup::~WP42ExtendedCharacterGroup()
 {
 }
 
-void WP42ExtendedCharacterGroup::_readContents(librevenge::RVNGInputStream *input, WPXEncryption *encryption)
+void WP42ExtendedCharacterGroup::_readContents(WPXInputStream *input, WPXEncryption *encryption)
 {
 	m_extendedCharacter = readU8(input, encryption);
 }
@@ -45,7 +45,7 @@ void WP42ExtendedCharacterGroup::_readContents(librevenge::RVNGInputStream *inpu
 void WP42ExtendedCharacterGroup::parse(WP42Listener *listener)
 {
 	WPD_DEBUG_MSG(("WordPerfect: handling an ExtendedCharacter group\n"));
-	const unsigned *chars;
+	const uint32_t *chars;
 	int len = extendedCharacterWP42ToUCS4(m_extendedCharacter, &chars);
 
 	for (int i = 0; i < len; i++)

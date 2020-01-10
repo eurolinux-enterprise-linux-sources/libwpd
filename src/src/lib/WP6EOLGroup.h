@@ -32,21 +32,21 @@
 class WP6EOLGroup : public WP6VariableLengthGroup
 {
 public:
-	WP6EOLGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	WP6EOLGroup(WPXInputStream *input, WPXEncryption *encryption);
 	~WP6EOLGroup();
-	void _readContents(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	void _readContents(WPXInputStream *input, WPXEncryption *encryption);
 	void parse(WP6Listener *listener);
 
 private:
 	WP6EOLGroup(const WP6EOLGroup &);
 	WP6EOLGroup &operator=(const WP6EOLGroup &);
-	unsigned char m_colSpan, m_rowSpan;
+	uint8_t m_colSpan, m_rowSpan;
 	bool m_boundFromAbove;
 
 	bool m_useCellAttributes, m_useCellJustification;
 	bool m_ignoreInCalculations, m_cellIsLocked;
-	unsigned m_cellAttributes;
-	unsigned char m_cellJustification;
+	uint32_t m_cellAttributes;
+	uint8_t m_cellJustification;
 	WPXVerticalAlignment m_cellVerticalAlign;
 
 	// cell forground and background color
@@ -54,10 +54,10 @@ private:
 	RGBSColor *m_cellBgColor;
 	RGBSColor *m_cellBorderColor;
 
-	unsigned char m_cellBorders;
+	uint8_t m_cellBorders;
 	bool m_isHeaderRow;
 	bool m_isMinimumHeight;
-	unsigned short m_rowHeight;
+	uint16_t m_rowHeight;
 
 	bool m_isDontEndAParagraphStyleForThisHardReturn;
 };

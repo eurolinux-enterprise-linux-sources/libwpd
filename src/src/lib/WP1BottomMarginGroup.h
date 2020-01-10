@@ -31,13 +31,13 @@
 class WP1BottomMarginGroup : public WP1FixedLengthGroup
 {
 public:
-	WP1BottomMarginGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption, unsigned char group);
+	WP1BottomMarginGroup(WPXInputStream *input, WPXEncryption *encryption, uint8_t group);
 	~WP1BottomMarginGroup();
-	void _readContents(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	void _readContents(WPXInputStream *input, WPXEncryption *encryption);
 	void parse(WP1Listener *listener);
 
 private:
-	unsigned short m_bottomMargin;
+	uint16_t m_bottomMargin;
 };
 
 #endif /* WP1BOTTOMMARGINGROUP_H */

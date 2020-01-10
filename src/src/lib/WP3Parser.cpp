@@ -33,7 +33,7 @@
 #include "libwpd_internal.h"
 #include "WPXTable.h"
 
-WP3Parser::WP3Parser(librevenge::RVNGInputStream *input, WPXHeader *header, WPXEncryption *encryption) :
+WP3Parser::WP3Parser(WPXInputStream *input, WPXHeader *header, WPXEncryption *encryption) :
 	WPXParser(input, header, encryption)
 {
 }
@@ -42,7 +42,7 @@ WP3Parser::~WP3Parser()
 {
 }
 
-WP3ResourceFork *WP3Parser::getResourceFork(librevenge::RVNGInputStream *input, WPXEncryption *encryption)
+WP3ResourceFork *WP3Parser::getResourceFork(WPXInputStream *input, WPXEncryption *encryption)
 {
 	WP3ResourceFork *resourceFork = 0;
 
@@ -58,18 +58,18 @@ WP3ResourceFork *WP3Parser::getResourceFork(librevenge::RVNGInputStream *input, 
 		resourceFork = new WP3ResourceFork(input, encryption);
 		return resourceFork;
 	}
-	catch (FileException)
+	catch(FileException)
 	{
 		DELETEP(resourceFork);
 		throw FileException();
 	}
 }
 
-void WP3Parser::parse(librevenge::RVNGInputStream *input, WPXEncryption *encryption, WP3Listener *listener)
+void WP3Parser::parse(WPXInputStream *input, WPXEncryption *encryption, WP3Listener *listener)
 {
 	listener->startDocument();
 
-	input->seek(getHeader()->getDocumentOffset(), librevenge::RVNG_SEEK_SET);
+	input->seek(getHeader()->getDocumentOffset(), WPX_SEEK_SET);
 
 	WPD_DEBUG_MSG(("WordPerfect: Starting document body parse (position = %ld)\n",(long)input->tell()));
 
@@ -79,11 +79,11 @@ void WP3Parser::parse(librevenge::RVNGInputStream *input, WPXEncryption *encrypt
 }
 
 // parseDocument: parses a document body (may call itself recursively, on other streams, or itself)
-void WP3Parser::parseDocument(librevenge::RVNGInputStream *input, WPXEncryption *encryption, WP3Listener *listener)
+void WP3Parser::parseDocument(WPXInputStream *input, WPXEncryption *encryption, WP3Listener *listener)
 {
-	while (!input->isEnd())
+	while (!input->atEOS())
 	{
-		unsigned char readVal;
+		uint8_t readVal;
 		readVal = readU8(input, encryption);
 
 		if (readVal == 0 || readVal == 0x7F || readVal == 0xFF)
@@ -91,13 +91,13 @@ void WP3Parser::parseDocument(librevenge::RVNGInputStream *input, WPXEncryption 
 			// FIXME: VERIFY: is this IF clause correct? (0xFF seems to be OK at least)
 			// do nothing: this token is meaningless and is likely just corruption
 		}
-		else if (readVal >= (unsigned char)0x01 && readVal <= (unsigned char)0x1F)
+		else if (readVal >= (uint8_t)0x01 && readVal <= (uint8_t)0x1F)
 		{
 			// control characters ?
 		}
-		else if (readVal >= (unsigned char)0x20 && readVal <= (unsigned char)0x7E)
+		else if (readVal >= (uint8_t)0x20 && readVal <= (uint8_t)0x7E)
 		{
-			listener->insertCharacter(readVal);
+			listener->insertCharacter( readVal );
 		}
 		else
 		{
@@ -111,9 +111,9 @@ void WP3Parser::parseDocument(librevenge::RVNGInputStream *input, WPXEncryption 
 	}
 }
 
-void WP3Parser::parse(librevenge::RVNGTextInterface *textInterface)
+void WP3Parser::parse(WPXDocumentInterface *documentInterface)
 {
-	librevenge::RVNGInputStream *input = getInput();
+	WPXInputStream *input = getInput();
 	WPXEncryption *encryption = getEncryption();
 	std::list<WPXPageSpan> pageList;
 	WPXTableList tableList;
@@ -148,7 +148,7 @@ void WP3Parser::parse(librevenge::RVNGTextInterface *textInterface)
 
 		// second pass: here is where we actually send the messages to the target app
 		// that are necessary to emit the body of the target document
-		WP3ContentListener listener(pageList, subDocuments, textInterface); // FIXME: SHOULD BE CONTENT_LISTENER, AND SHOULD BE PASSED TABLE DATA!
+		WP3ContentListener listener(pageList, subDocuments, documentInterface); // FIXME: SHOULD BE CONTENT_LISTENER, AND SHOULD BE PASSED TABLE DATA!
 		listener.setResourceFork(resourceFork);
 		parse(input, encryption, &listener);
 
@@ -161,7 +161,7 @@ void WP3Parser::parse(librevenge::RVNGTextInterface *textInterface)
 
 		delete resourceFork;
 	}
-	catch (FileException)
+	catch(FileException)
 	{
 		WPD_DEBUG_MSG(("WordPerfect: File Exception. Parse terminated prematurely."));
 
@@ -177,13 +177,13 @@ void WP3Parser::parse(librevenge::RVNGTextInterface *textInterface)
 	}
 }
 
-void WP3Parser::parseSubDocument(librevenge::RVNGTextInterface *textInterface)
+void WP3Parser::parseSubDocument(WPXDocumentInterface *documentInterface)
 {
 	std::list<WPXPageSpan> pageList;
 	WPXTableList tableList;
 	std::vector<WP3SubDocument *> subDocuments;
 
-	librevenge::RVNGInputStream *input = getInput();
+	WPXInputStream *input = getInput();
 
 	try
 	{
@@ -192,9 +192,9 @@ void WP3Parser::parseSubDocument(librevenge::RVNGTextInterface *textInterface)
 		parseDocument(input, 0, &stylesListener);
 		stylesListener.endSubDocument();
 
-		input->seek(0, librevenge::RVNG_SEEK_SET);
+		input->seek(0, WPX_SEEK_SET);
 
-		WP3ContentListener listener(pageList, subDocuments, textInterface);
+		WP3ContentListener listener(pageList, subDocuments, documentInterface);
 		listener.startSubDocument();
 		parseDocument(input, 0, &listener);
 		listener.endSubDocument();
@@ -203,7 +203,7 @@ void WP3Parser::parseSubDocument(librevenge::RVNGTextInterface *textInterface)
 			if (*iterSubDoc)
 				delete *iterSubDoc;
 	}
-	catch (FileException)
+	catch(FileException)
 	{
 		WPD_DEBUG_MSG(("WordPerfect: File Exception. Parse terminated prematurely."));
 		for (std::vector<WP3SubDocument *>::iterator iterSubDoc = subDocuments.begin(); iterSubDoc != subDocuments.end(); ++iterSubDoc)

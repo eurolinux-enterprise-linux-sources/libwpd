@@ -31,15 +31,15 @@
 class WP5FontGroup : public WP5VariableLengthGroup
 {
 public:
-	WP5FontGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	WP5FontGroup(WPXInputStream *input, WPXEncryption *encryption);
 	void parse(WP5Listener *listener);
 
 protected:
-	void _readContents(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	void _readContents(WPXInputStream *input, WPXEncryption *encryption);
 
 private:
-	unsigned char m_red, m_green, m_blue;
-	unsigned char m_fontNumber;
+	uint8_t m_red, m_green, m_blue;
+	uint8_t m_fontNumber;
 	double m_fontSize;
 };
 

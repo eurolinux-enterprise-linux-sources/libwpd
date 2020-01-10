@@ -29,21 +29,21 @@
 #include "WPXListener.h"
 #include <string.h>
 
-WPXSubDocument::WPXSubDocument(librevenge::RVNGInputStream *input, WPXEncryption *encryption, const unsigned dataSize) :
+WPXSubDocument::WPXSubDocument(WPXInputStream *input, WPXEncryption *encryption, const unsigned dataSize) :
 	m_stream(0),
-	m_streamData(new unsigned char[dataSize])
+	m_streamData(new uint8_t[dataSize])
 {
 	unsigned i=0;
 	for (; i<dataSize; i++)
 	{
-		if (input->isEnd())
+		if (input->atEOS())
 			break;
 		m_streamData[i] = readU8(input, encryption);
 	}
 	m_stream = new WPXMemoryInputStream(m_streamData, i);
 }
 
-WPXSubDocument::WPXSubDocument(unsigned char *streamData, const unsigned dataSize) :
+WPXSubDocument::WPXSubDocument(uint8_t *streamData, const unsigned dataSize) :
 	m_stream(0),
 	m_streamData(0)
 {

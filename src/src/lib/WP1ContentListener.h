@@ -38,7 +38,7 @@ struct _WP1ContentParsingState
 {
 	_WP1ContentParsingState();
 	~_WP1ContentParsingState();
-	librevenge::RVNGString m_textBuffer;
+	WPXString m_textBuffer;
 	int m_numDeferredTabs;
 	int m_footNoteNumber, m_endNoteNumber;
 private:
@@ -49,7 +49,7 @@ private:
 class WP1ContentListener : public WP1Listener, protected WPXContentListener
 {
 public:
-	WP1ContentListener(std::list<WPXPageSpan> &pageList, std::vector<WP1SubDocument *> &subDocuments, librevenge::RVNGTextInterface *documentInterface);
+	WP1ContentListener(std::list<WPXPageSpan> &pageList, std::vector<WP1SubDocument *> &subDocuments, WPXDocumentInterface *documentInterface);
 	~WP1ContentListener();
 
 	void startDocument()
@@ -60,29 +60,29 @@ public:
 	{
 		WPXContentListener::startSubDocument();
 	}
-	void insertCharacter(unsigned character);
-	void insertExtendedCharacter(unsigned char extendedCharacter);
+	void insertCharacter(uint32_t character);
+	void insertExtendedCharacter(uint8_t extendedCharacter);
 	void insertTab();
-	void insertBreak(unsigned char breakType)
+	void insertBreak(uint8_t breakType)
 	{
 		WPXContentListener::insertBreak(breakType);
 	}
 	void insertEOL();
 	void insertNote(WPXNoteType noteType, WP1SubDocument *subDocument);
-	void attributeChange(bool isOn, unsigned char attribute);
-	void fontPointSize(unsigned char pointSize);
-	void fontId(unsigned short id);
-	void marginReset(unsigned short leftMargin, unsigned short rightMargin);
-	void topMarginSet(unsigned short /* topMargin */) {}
-	void bottomMarginSet(unsigned short /* bottomMargin */) {}
-	void leftIndent(unsigned short leftMarginOffset);
-	void leftRightIndent(unsigned short leftRightMarginOffset);
-	void leftMarginRelease(unsigned short release);
+	void attributeChange(bool isOn, uint8_t attribute);
+	void fontPointSize(uint8_t pointSize);
+	void fontId(uint16_t id);
+	void marginReset(uint16_t leftMargin, uint16_t rightMargin);
+	void topMarginSet(uint16_t /* topMargin */) {}
+	void bottomMarginSet(uint16_t /* bottomMargin */) {}
+	void leftIndent(uint16_t leftMarginOffset);
+	void leftRightIndent(uint16_t leftRightMarginOffset);
+	void leftMarginRelease(uint16_t release);
 	void setTabs(const std::vector<WPXTabStop> &tabStops);
-	void headerFooterGroup(unsigned char headerFooterDefinition, WP1SubDocument *subDocument);
-	void suppressPageCharacteristics(unsigned char /* suppressCode */) {}
-	void justificationChange(unsigned char justification);
-	void lineSpacingChange(unsigned char spacing)
+	void headerFooterGroup(uint8_t headerFooterDefinition, WP1SubDocument *subDocument);
+	void suppressPageCharacteristics(uint8_t /* suppressCode */) {}
+	void justificationChange(uint8_t justification);
+	void lineSpacingChange(uint8_t spacing)
 	{
 		WPXContentListener::lineSpacingChange((double)((double)spacing/2.0));
 	}
@@ -98,7 +98,7 @@ public:
 	{
 		WPXContentListener::endSubDocument();
 	}
-	void insertPicture(unsigned short width, unsigned short height, const librevenge::RVNGBinaryData &binaryData);
+	void insertPicture(uint16_t width, uint16_t height, const WPXBinaryData &binaryData);
 
 protected:
 	using WPXContentListener::lineSpacingChange;

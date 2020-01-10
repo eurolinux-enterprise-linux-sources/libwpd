@@ -27,26 +27,14 @@
 #ifndef WPDOCUMENT_H
 #define WPDOCUMENT_H
 
-#ifdef DLL_EXPORT
-#ifdef LIBWPD_BUILD
-#define WPDAPI __declspec(dllexport)
-#else
-#define WPDAPI __declspec(dllimport)
-#endif
-#else
-#define WPDAPI
-#endif
-
-#include <librevenge/librevenge.h>
-
-namespace libwpd
-{
-
 /* The "WPD_CONFIDENCE_NONE=0" must not be removed for the type detection to work well */
 enum WPDConfidence { WPD_CONFIDENCE_NONE=0, WPD_CONFIDENCE_UNSUPPORTED_ENCRYPTION, WPD_CONFIDENCE_SUPPORTED_ENCRYPTION, WPD_CONFIDENCE_EXCELLENT };
 enum WPDResult { WPD_OK, WPD_FILE_ACCESS_ERROR, WPD_PARSE_ERROR, WPD_UNSUPPORTED_ENCRYPTION_ERROR, WPD_PASSWORD_MISSMATCH_ERROR, WPD_OLE_ERROR, WPD_UNKNOWN_ERROR };
 enum WPDPasswordMatch { WPD_PASSWORD_MATCH_NONE, WPD_PASSWORD_MATCH_DONTKNOW, WPD_PASSWORD_MATCH_OK };
 enum WPDFileFormat { WPD_FILE_FORMAT_WP6, WPD_FILE_FORMAT_WP5, WPD_FILE_FORMAT_WP42, WPD_FILE_FORMAT_WP3, WPD_FILE_FORMAT_WP1, WPD_FILE_FORMAT_UNKNOWN };
+
+class WPXDocumentInterface;
+class WPXInputStream;
 
 /**
 This class provides all the functions an application would need to parse
@@ -56,13 +44,11 @@ WordPerfect documents.
 class WPDocument
 {
 public:
-	static WPDAPI WPDConfidence isFileFormatSupported(librevenge::RVNGInputStream *input);
-	static WPDAPI WPDPasswordMatch verifyPassword(librevenge::RVNGInputStream *input, const char *password);
-	static WPDAPI WPDResult parse(librevenge::RVNGInputStream *input, librevenge::RVNGTextInterface *documentInterface, const char *password);
-	static WPDAPI WPDResult parseSubDocument(librevenge::RVNGInputStream *input, librevenge::RVNGTextInterface *documentInterface, WPDFileFormat fileFormat);
+	static WPDConfidence isFileFormatSupported(WPXInputStream *input);
+	static WPDPasswordMatch verifyPassword(WPXInputStream *input, const char *password);
+	static WPDResult parse(WPXInputStream *input, WPXDocumentInterface *documentInterface, const char *password);
+	static WPDResult parseSubDocument(WPXInputStream *input, WPXDocumentInterface *documentInterface, WPDFileFormat fileFormat);
 };
-
-} // namespace libwpd
 
 #endif /* WPDOCUMENT_H */
 /* vim:set shiftwidth=4 softtabstop=4 noexpandtab: */

@@ -61,7 +61,7 @@ WP6VariableLengthGroup::~WP6VariableLengthGroup()
 		delete [] m_prefixIDs;
 }
 
-WP6VariableLengthGroup *WP6VariableLengthGroup::constructVariableLengthGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption, const unsigned char groupID)
+WP6VariableLengthGroup *WP6VariableLengthGroup::constructVariableLengthGroup(WPXInputStream *input, WPXEncryption *encryption, const uint8_t groupID)
 {
 	switch (groupID)
 	{
@@ -97,42 +97,42 @@ WP6VariableLengthGroup *WP6VariableLengthGroup::constructVariableLengthGroup(lib
 	}
 }
 
-bool WP6VariableLengthGroup::isGroupConsistent(librevenge::RVNGInputStream *input, WPXEncryption *encryption, const unsigned char groupID)
+bool WP6VariableLengthGroup::isGroupConsistent(WPXInputStream *input, WPXEncryption *encryption, const uint8_t groupID)
 {
 	long startPosition = input->tell();
 
 	try
 	{
-		input->seek(1, librevenge::RVNG_SEEK_CUR);
-		unsigned short size = readU16(input, encryption);
+		input->seek(1, WPX_SEEK_CUR);
+		uint16_t size = readU16(input, encryption);
 
-		if (input->seek((startPosition + size - 4), librevenge::RVNG_SEEK_SET) || input->isEnd())
+		if (input->seek((startPosition + size - 4), WPX_SEEK_SET) || input->atEOS())
 		{
-			input->seek(startPosition, librevenge::RVNG_SEEK_SET);
+			input->seek(startPosition, WPX_SEEK_SET);
 			return false;
 		}
 		if (size != readU16(input, encryption))
 		{
-			input->seek(startPosition, librevenge::RVNG_SEEK_SET);
+			input->seek(startPosition, WPX_SEEK_SET);
 			return false;
 		}
 		if (groupID != readU8(input, encryption))
 		{
-			input->seek(startPosition, librevenge::RVNG_SEEK_SET);
+			input->seek(startPosition, WPX_SEEK_SET);
 			return false;
 		}
 
-		input->seek(startPosition, librevenge::RVNG_SEEK_SET);
+		input->seek(startPosition, WPX_SEEK_SET);
 		return true;
 	}
-	catch (...)
+	catch(...)
 	{
-		input->seek(startPosition, librevenge::RVNG_SEEK_SET);
+		input->seek(startPosition, WPX_SEEK_SET);
 		return false;
 	}
 }
 
-void WP6VariableLengthGroup::_read(librevenge::RVNGInputStream *input, WPXEncryption *encryption)
+void WP6VariableLengthGroup::_read(WPXInputStream *input, WPXEncryption *encryption)
 {
 	long startPosition = input->tell();
 
@@ -147,8 +147,8 @@ void WP6VariableLengthGroup::_read(librevenge::RVNGInputStream *input, WPXEncryp
 
 		if (m_numPrefixIDs > 0)
 		{
-			m_prefixIDs = new unsigned short[m_numPrefixIDs];
-			for (unsigned i = 0; i < m_numPrefixIDs; i++)
+			m_prefixIDs = new uint16_t[m_numPrefixIDs];
+			for (uint32_t i = 0; i < m_numPrefixIDs; i++)
 			{
 				m_prefixIDs[i] = readU16(input, encryption);
 			}
@@ -168,15 +168,15 @@ void WP6VariableLengthGroup::_read(librevenge::RVNGInputStream *input, WPXEncryp
 	}
 
 	long tmpPosition = input->tell();
-	input->seek(m_sizeNonDeletable, librevenge::RVNG_SEEK_CUR);
-	m_sizeDeletable = (unsigned short)(startPosition + m_size - 4 - input->tell());
-	input->seek(tmpPosition, librevenge::RVNG_SEEK_SET);
+	input->seek(m_sizeNonDeletable, WPX_SEEK_CUR);
+	m_sizeDeletable = (uint16_t)(startPosition + m_size - 4 - input->tell());
+	input->seek(tmpPosition, WPX_SEEK_SET);
 
 	WPD_DEBUG_MSG(("WordPerfect: Read variable group header (start_position: %li, sub_group: %i, size: %i, flags: %i, num_prefix_ids: %i, size_non_deletable: %i, size_deletable: %i)\n", startPosition, m_subGroup, m_size, m_flags, m_numPrefixIDs, m_sizeNonDeletable, m_sizeDeletable));
 
 	_readContents(input, encryption);
 
-	input->seek((startPosition + m_size - 4), librevenge::RVNG_SEEK_SET);
+	input->seek((startPosition + m_size - 4), WPX_SEEK_SET);
 
 	if (m_size != readU16(input, encryption))
 	{
@@ -184,6 +184,6 @@ void WP6VariableLengthGroup::_read(librevenge::RVNGInputStream *input, WPXEncryp
 		throw FileException();
 	}
 
-	input->seek((startPosition + m_size - 1), librevenge::RVNG_SEEK_SET);
+	input->seek((startPosition + m_size - 1), WPX_SEEK_SET);
 }
 /* vim:set shiftwidth=4 softtabstop=4 noexpandtab: */

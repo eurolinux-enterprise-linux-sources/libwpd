@@ -27,7 +27,7 @@
 #include "libwpd_internal.h"
 #include <vector>
 
-WP1SetTabsGroup::WP1SetTabsGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption, unsigned char group) :
+WP1SetTabsGroup::WP1SetTabsGroup(WPXInputStream *input, WPXEncryption *encryption, uint8_t group) :
 	WP1VariableLengthGroup(group),
 	m_tabStops(std::vector<WPXTabStop>())
 {
@@ -38,26 +38,26 @@ WP1SetTabsGroup::~WP1SetTabsGroup()
 {
 }
 
-void WP1SetTabsGroup::_readContents(librevenge::RVNGInputStream *input, WPXEncryption *encryption)
+void WP1SetTabsGroup::_readContents(WPXInputStream *input, WPXEncryption *encryption)
 {
 	// Skip first the old condensed tab table
-	while (readU8(input, encryption) != 0xff && !input->isEnd())
-		input->seek(2, librevenge::RVNG_SEEK_CUR);
+	while (readU8(input, encryption) != 0xff && !input->atEOS())
+		input->seek(2, WPX_SEEK_CUR);
 
 	// Now read the new condensed tab table
-	signed char tmpTabType = 0;
+	int8_t tmpTabType = 0;
 	double tmpTabPosition = 0.0;
 	WPXTabStop tmpTabStop = WPXTabStop();
 
-	while (((tmpTabType = (signed char)readU8(input, encryption)) & 0xff) != 0xff)
+	while (((tmpTabType = (int8_t)readU8(input, encryption)) & 0xff) != 0xff)
 	{
-		if (input->isEnd())
+		if (input->atEOS())
 			throw FileException();
 		tmpTabPosition = (double)((double)readU16(input, encryption, true) / 72.0);
 
 		if (tmpTabType < 0)
 		{
-			for (signed char i = tmpTabType; i < 0; i++)
+			for (int8_t i = tmpTabType; i < 0; i++)
 			{
 				tmpTabStop.m_position += tmpTabPosition;
 				m_tabStops.push_back(tmpTabStop);
@@ -106,7 +106,7 @@ void WP1SetTabsGroup::parse(WP1Listener *listener)
 {
 #ifdef DEBUG
 	WPD_DEBUG_MSG(("Parsing Set Tabs Group (positions: "));
-	for (std::vector<WPXTabStop>::const_iterator i = m_tabStops.begin(); i != m_tabStops.end(); ++i)
+	for(std::vector<WPXTabStop>::const_iterator i = m_tabStops.begin(); i != m_tabStops.end(); ++i)
 	{
 		WPD_DEBUG_MSG((" %.4f", (*i).m_position));
 	}

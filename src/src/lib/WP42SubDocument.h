@@ -33,7 +33,7 @@
 class WP42SubDocument : public WPXSubDocument
 {
 public:
-	WP42SubDocument(librevenge::RVNGInputStream *input, WPXEncryption *encryption, const unsigned dataSize);
+	WP42SubDocument(WPXInputStream *input, WPXEncryption *encryption, const unsigned dataSize);
 	void parse(WP42Listener *listener) const;
 
 };

@@ -28,7 +28,7 @@
 #include "WP5Parser.h"
 #include "libwpd_internal.h"
 
-WP5FontNameStringPoolPacket::WP5FontNameStringPoolPacket(librevenge::RVNGInputStream *input, WPXEncryption *encryption, int /* id */, unsigned dataOffset, unsigned dataSize) :
+WP5FontNameStringPoolPacket::WP5FontNameStringPoolPacket(WPXInputStream *input, WPXEncryption *encryption, int /* id */, uint32_t dataOffset, uint32_t dataSize) :
 	WP5GeneralPacketData(),
 	m_fontNameString()
 {
@@ -39,27 +39,27 @@ WP5FontNameStringPoolPacket::~WP5FontNameStringPoolPacket()
 {
 }
 
-void WP5FontNameStringPoolPacket::_readContents(librevenge::RVNGInputStream *input, WPXEncryption *encryption, unsigned dataSize)
+void WP5FontNameStringPoolPacket::_readContents(WPXInputStream *input, WPXEncryption *encryption, uint32_t dataSize)
 {
 	long tmpInitialOffset = input->tell();
 	while (input->tell() < (long)(tmpInitialOffset + dataSize))
 	{
 		unsigned offset = (unsigned)(input->tell() - tmpInitialOffset);
-		librevenge::RVNGString fontName = readCString(input, encryption);
+		WPXString fontName = readCString(input, encryption);
 		m_fontNameString[offset] = fontName;
 	}
 
-	for (std::map<unsigned int, librevenge::RVNGString>::const_iterator Iter = m_fontNameString.begin(); Iter != m_fontNameString.end(); ++Iter)
+	for (std::map<unsigned int, WPXString>::const_iterator Iter = m_fontNameString.begin(); Iter != m_fontNameString.end(); ++Iter)
 		WPD_DEBUG_MSG(("WP5 Font Name String Pool Packet: offset: %i font name: %s\n", Iter->first, (Iter->second).cstr()));
 }
 
-librevenge::RVNGString WP5FontNameStringPoolPacket::getFontName(const unsigned int offset) const
+WPXString WP5FontNameStringPoolPacket::getFontName(const unsigned int offset) const
 {
-	std::map<unsigned int, librevenge::RVNGString>::const_iterator Iter = m_fontNameString.find(offset);
+	std::map<unsigned int, WPXString>::const_iterator Iter = m_fontNameString.find(offset);
 	if (Iter != m_fontNameString.end())
 		return Iter->second;
 	// if the offset is not correct, return the default value
-	return librevenge::RVNGString("Times New Roman");
+	return WPXString("Times New Roman");
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 noexpandtab: */

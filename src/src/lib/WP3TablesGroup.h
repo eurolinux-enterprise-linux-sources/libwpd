@@ -33,28 +33,28 @@
 class WP3TablesGroup : public WP3VariableLengthGroup
 {
 public:
-	WP3TablesGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	WP3TablesGroup(WPXInputStream *input, WPXEncryption *encryption);
 	~WP3TablesGroup();
-	void _readContents(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	void _readContents(WPXInputStream *input, WPXEncryption *encryption);
 	void parse(WP3Listener *listener);
 
 private:
 	// variables needed for subgroup 1 (Table Function)
-	unsigned char m_tableMode;
-	unsigned m_offsetFromLeftEdge;
-	unsigned m_topGutterSpacing;
-	unsigned m_leftGutterSpacing;
-	unsigned m_bottomGutterSpacing;
-	unsigned m_rightGutterSpacing;
-	unsigned char m_numColumns;
-	std::vector<unsigned char> m_columnMode;
-	std::vector<unsigned char> m_numberFormat;
-	std::vector<unsigned> m_columnWidth;
-	std::vector<unsigned> m_rightOffsetForDecimalAlign;
+	uint8_t m_tableMode;
+	uint32_t m_offsetFromLeftEdge;
+	uint32_t m_topGutterSpacing;
+	uint32_t m_leftGutterSpacing;
+	uint32_t m_bottomGutterSpacing;
+	uint32_t m_rightGutterSpacing;
+	uint8_t m_numColumns;
+	std::vector<uint8_t> m_columnMode;
+	std::vector<uint8_t> m_numberFormat;
+	std::vector<uint32_t> m_columnWidth;
+	std::vector<uint32_t> m_rightOffsetForDecimalAlign;
 
 	// variables needed for subgroup 2 (Set Table Cell Span)
-	unsigned short m_colSpan;
-	unsigned short m_rowSpan;
+	uint16_t m_colSpan;
+	uint16_t m_rowSpan;
 
 	// variables needed for subgroup 0x0B (Set Table Cell Fill Color/Patern)
 	RGBSColor m_cellFillColor;

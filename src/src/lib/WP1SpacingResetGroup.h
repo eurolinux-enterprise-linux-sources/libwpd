@@ -31,13 +31,13 @@
 class WP1SpacingResetGroup : public WP1FixedLengthGroup
 {
 public:
-	WP1SpacingResetGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption, unsigned char group);
+	WP1SpacingResetGroup(WPXInputStream *input, WPXEncryption *encryption, uint8_t group);
 	~WP1SpacingResetGroup();
-	void _readContents(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	void _readContents(WPXInputStream *input, WPXEncryption *encryption);
 	void parse(WP1Listener *listener);
 
 private:
-	unsigned char m_spacing;
+	uint8_t m_spacing;
 };
 
 #endif /* WP1SPACINGRESETGROUP_H */

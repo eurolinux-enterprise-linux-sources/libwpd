@@ -29,7 +29,7 @@
 #include "WP5Listener.h"
 #include "WPXFileStructure.h"
 
-WP5TabGroup::WP5TabGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption, unsigned char groupID) :
+WP5TabGroup::WP5TabGroup(WPXInputStream *input, WPXEncryption *encryption, uint8_t groupID) :
 	WP5FixedLengthGroup(groupID),
 	m_tabType(0),
 	m_tabPosition(0.0)
@@ -37,11 +37,11 @@ WP5TabGroup::WP5TabGroup(librevenge::RVNGInputStream *input, WPXEncryption *encr
 	_read(input, encryption);
 }
 
-void WP5TabGroup::_readContents(librevenge::RVNGInputStream *input, WPXEncryption *encryption)
+void WP5TabGroup::_readContents(WPXInputStream *input, WPXEncryption *encryption)
 {
 	m_tabType = readU8(input, encryption);
-	input->seek(2, librevenge::RVNG_SEEK_CUR);
-	unsigned short tmpTabPosition = readU16(input, encryption);
+	input->seek(2, WPX_SEEK_CUR);
+	uint16_t tmpTabPosition = readU16(input, encryption);
 	m_tabPosition = (double)((double)tmpTabPosition/(double)WPX_NUM_WPUS_PER_INCH);
 }
 

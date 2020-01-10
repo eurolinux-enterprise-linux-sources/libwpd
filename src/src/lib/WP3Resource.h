@@ -27,9 +27,9 @@
 #ifndef WP3RESOURCE_H
 #define WP3RESOURCE_H
 
-#include <librevenge/librevenge.h>
 #include <libwpd/libwpd.h>
 #include "WPXParser.h"
+#include "libwpd_types.h"
 
 class WP3Listener;
 class WP3SubDocument;
@@ -37,37 +37,37 @@ class WP3SubDocument;
 class WP3Resource
 {
 public:
-	WP3Resource(unsigned resourceType, unsigned resourceReferenceID, const librevenge::RVNGString &resourceName,
-	            unsigned char resourceAttributes, const librevenge::RVNGBinaryData &resourceData);
+	WP3Resource(uint32_t resourceType, uint32_t resourceReferenceID, const WPXString &resourceName,
+	            uint8_t resourceAttributes, const WPXBinaryData &resourceData);
 	virtual ~WP3Resource() {}
 
-	unsigned getResourceType() const
+	uint32_t getResourceType() const
 	{
 		return m_resourceType;
 	}
-	unsigned getResourceReferenceID() const
+	uint32_t getResourceReferenceID() const
 	{
 		return m_resourceReferenceID;
 	}
-	const librevenge::RVNGString &getResourceName() const
+	const WPXString &getResourceName() const
 	{
 		return m_resourceName;
 	}
-	unsigned char getResourceAttributes() const
+	uint8_t getResourceAttributes() const
 	{
 		return m_resourceAttributes;
 	}
-	const librevenge::RVNGBinaryData &getResourceData() const
+	const WPXBinaryData &getResourceData() const
 	{
 		return m_resourceData;
 	}
 
 private:
-	unsigned m_resourceType;
-	unsigned m_resourceReferenceID;
-	const librevenge::RVNGString m_resourceName;
-	unsigned char m_resourceAttributes;
-	librevenge::RVNGBinaryData m_resourceData;
+	uint32_t m_resourceType;
+	uint32_t m_resourceReferenceID;
+	const WPXString m_resourceName;
+	uint8_t m_resourceAttributes;
+	WPXBinaryData m_resourceData;
 };
 
 #endif /* WP3RESOURCE_H */

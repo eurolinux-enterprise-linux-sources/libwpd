@@ -27,6 +27,7 @@
 #ifndef LIBWPD_H
 #define LIBWPD_H
 
+#include "WPXDocumentInterface.h"
 #include "WPDocument.h"
 
 #endif /* LIBWPD_H */

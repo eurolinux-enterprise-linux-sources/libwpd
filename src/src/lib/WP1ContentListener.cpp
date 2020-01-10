@@ -45,7 +45,7 @@ _WP1ContentParsingState::~_WP1ContentParsingState()
 }
 
 
-WP1ContentListener::WP1ContentListener(std::list<WPXPageSpan> &pageList, std::vector<WP1SubDocument *> &subDocuments, librevenge::RVNGTextInterface *documentInterface) :
+WP1ContentListener::WP1ContentListener(std::list<WPXPageSpan> &pageList, std::vector<WP1SubDocument *> &subDocuments, WPXDocumentInterface *documentInterface) :
 	WP1Listener(),
 	WPXContentListener(pageList, documentInterface),
 	m_parseState(new WP1ContentParsingState),
@@ -61,11 +61,11 @@ WP1ContentListener::~WP1ContentListener()
 }
 
 
-void WP1ContentListener::insertCharacter(unsigned character)
+void WP1ContentListener::insertCharacter(uint32_t character)
 {
 	if (!isUndoOn())
 	{
-		unsigned tmpCharacter = _mapNonUnicodeCharacter(character);
+		uint32_t tmpCharacter = _mapNonUnicodeCharacter(character);
 
 		if (!m_ps->m_isSpanOpened)
 			_openSpan();
@@ -77,7 +77,7 @@ void WP1ContentListener::insertCharacter(unsigned character)
 	}
 }
 
-void WP1ContentListener::insertExtendedCharacter(unsigned char extendedCharacter)
+void WP1ContentListener::insertExtendedCharacter(uint8_t extendedCharacter)
 {
 	if (!isUndoOn())
 	{
@@ -88,9 +88,9 @@ void WP1ContentListener::insertExtendedCharacter(unsigned char extendedCharacter
 			m_documentInterface->insertTab();
 		}
 		if (extendedCharacter <= 0x20)
-			appendUCS4(m_parseState->m_textBuffer, (unsigned)0x20);
+			appendUCS4(m_parseState->m_textBuffer, (uint32_t)0x20);
 		else
-			appendUCS4(m_parseState->m_textBuffer, (unsigned)(_mapNonUnicodeCharacter(macRomanCharacterMap[extendedCharacter - 0x20])));
+			appendUCS4(m_parseState->m_textBuffer, (uint32_t)(_mapNonUnicodeCharacter(macRomanCharacterMap[extendedCharacter - 0x20])));
 	}
 }
 
@@ -144,16 +144,16 @@ void WP1ContentListener::insertNote(const WPXNoteType noteType, WP1SubDocument *
 
 		m_ps->m_isNote = true;
 
-		librevenge::RVNGPropertyList propList;
+		WPXPropertyList propList;
 
 		if (noteType == FOOTNOTE)
 		{
-			propList.insert("librevenge:number", ++(m_parseState->m_footNoteNumber));
+			propList.insert("libwpd:number", ++(m_parseState->m_footNoteNumber));
 			m_documentInterface->openFootnote(propList);
 		}
 		else
 		{
-			propList.insert("librevenge:number", ++(m_parseState->m_endNoteNumber));
+			propList.insert("libwpd:number", ++(m_parseState->m_endNoteNumber));
 			m_documentInterface->openEndnote(propList);
 		}
 
@@ -169,11 +169,11 @@ void WP1ContentListener::insertNote(const WPXNoteType noteType, WP1SubDocument *
 }
 
 
-void WP1ContentListener::attributeChange(bool isOn, unsigned char attribute)
+void WP1ContentListener::attributeChange(bool isOn, uint8_t attribute)
 {
 	_closeSpan();
 
-	unsigned textAttributeBit = 0;
+	uint32_t textAttributeBit = 0;
 
 	switch (attribute)
 	{
@@ -214,7 +214,7 @@ void WP1ContentListener::attributeChange(bool isOn, unsigned char attribute)
 		m_ps->m_textAttributeBits &= ~textAttributeBit;
 }
 
-void WP1ContentListener::fontPointSize(unsigned char pointSize)
+void WP1ContentListener::fontPointSize(uint8_t pointSize)
 {
 	if (!isUndoOn())
 	{
@@ -224,7 +224,7 @@ void WP1ContentListener::fontPointSize(unsigned char pointSize)
 	}
 }
 
-void WP1ContentListener::fontId(unsigned short id)
+void WP1ContentListener::fontId(uint16_t id)
 {
 	if (!isUndoOn())
 	{
@@ -385,7 +385,7 @@ void WP1ContentListener::fontId(unsigned short id)
 	}
 }
 
-void WP1ContentListener::marginReset(unsigned short leftMargin, unsigned short rightMargin)
+void WP1ContentListener::marginReset(uint16_t leftMargin, uint16_t rightMargin)
 {
 	if (!isUndoOn())
 	{
@@ -410,7 +410,7 @@ void WP1ContentListener::marginReset(unsigned short leftMargin, unsigned short r
 	}
 }
 
-void WP1ContentListener::leftIndent(unsigned short leftMarginOffset)
+void WP1ContentListener::leftIndent(uint16_t leftMarginOffset)
 {
 	if (!isUndoOn())
 	{
@@ -428,7 +428,7 @@ void WP1ContentListener::leftIndent(unsigned short leftMarginOffset)
 	}
 }
 
-void WP1ContentListener::leftRightIndent(unsigned short leftRightMarginOffset)
+void WP1ContentListener::leftRightIndent(uint16_t leftRightMarginOffset)
 {
 	if (!isUndoOn())
 	{
@@ -450,7 +450,7 @@ void WP1ContentListener::leftRightIndent(unsigned short leftRightMarginOffset)
 	}
 }
 
-void WP1ContentListener::leftMarginRelease(unsigned short release)
+void WP1ContentListener::leftMarginRelease(uint16_t release)
 {
 	if (!isUndoOn())
 	{
@@ -469,7 +469,7 @@ void WP1ContentListener::leftMarginRelease(unsigned short release)
 	}
 }
 
-void WP1ContentListener::justificationChange(unsigned char justification)
+void WP1ContentListener::justificationChange(uint8_t justification)
 {
 	if (!isUndoOn())
 	{
@@ -491,7 +491,7 @@ void WP1ContentListener::justificationChange(unsigned char justification)
 	}
 }
 
-void WP1ContentListener::headerFooterGroup(unsigned char /* headerFooterDefinition */, WP1SubDocument *subDocument)
+void WP1ContentListener::headerFooterGroup(uint8_t /* headerFooterDefinition */, WP1SubDocument *subDocument)
 {
 	if (subDocument)
 		m_subDocuments.push_back(subDocument);
@@ -534,30 +534,29 @@ void WP1ContentListener::centerOn()
 	}
 }
 
-void WP1ContentListener::insertPicture(unsigned short width, unsigned short height, const librevenge::RVNGBinaryData &binaryData)
+void WP1ContentListener::insertPicture(uint16_t width, uint16_t height, const WPXBinaryData &binaryData)
 {
 	if (!isUndoOn())
 	{
 		if (!m_ps->m_isSpanOpened)
 			_openSpan();
 
-		librevenge::RVNGPropertyList propList;
+		WPXPropertyList propList;
 		propList.insert("svg:width", (double)((double)width/72.0));
 		propList.insert("svg:height", (double)((double)height/72.0));
 		propList.insert("text:anchor-type", "as-char");
 		m_documentInterface->openFrame(propList);
 
 		propList.clear();
-		propList.insert("librevenge:mime-type", "image/pict");
-		propList.insert("office:binary-data", binaryData);
-		m_documentInterface->insertBinaryObject(propList);
+		propList.insert("libwpd:mimetype", "image/pict");
+		m_documentInterface->insertBinaryObject(propList, binaryData);
 
 		m_documentInterface->closeFrame();
 	}
 }
 
 void WP1ContentListener::_handleSubDocument(const WPXSubDocument *subDocument, WPXSubDocumentType /* subDocumentType */,
-                                            WPXTableList /* tableList */, unsigned /* nextTableIndice */)
+        WPXTableList /* tableList */, unsigned /* nextTableIndice */)
 {
 	// save our old parsing state on our "stack"
 	WP1ContentParsingState *oldParseState = m_parseState;

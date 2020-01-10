@@ -26,7 +26,7 @@
 #include "WP1LeftIndentGroup.h"
 #include "libwpd_internal.h"
 
-WP1LeftIndentGroup::WP1LeftIndentGroup(librevenge::RVNGInputStream *input, WPXEncryption *encryption, unsigned char group) :
+WP1LeftIndentGroup::WP1LeftIndentGroup(WPXInputStream *input, WPXEncryption *encryption, uint8_t group) :
 	WP1FixedLengthGroup(group),
 	m_oldLeftMargin(0),
 	m_newLeftMargin(0)
@@ -38,7 +38,7 @@ WP1LeftIndentGroup::~WP1LeftIndentGroup()
 {
 }
 
-void WP1LeftIndentGroup::_readContents(librevenge::RVNGInputStream *input, WPXEncryption *encryption)
+void WP1LeftIndentGroup::_readContents(WPXInputStream *input, WPXEncryption *encryption)
 {
 	m_oldLeftMargin = readU16(input, encryption, true);
 	m_newLeftMargin = readU16(input, encryption, true);
@@ -47,6 +47,6 @@ void WP1LeftIndentGroup::_readContents(librevenge::RVNGInputStream *input, WPXEn
 void WP1LeftIndentGroup::parse(WP1Listener *listener)
 {
 	WPD_DEBUG_MSG(("WordPerfect: handling the Left Indent group\n"));
-	listener->leftIndent((unsigned short)(m_newLeftMargin - m_oldLeftMargin));
+	listener->leftIndent((uint16_t)(m_newLeftMargin - m_oldLeftMargin));
 }
 /* vim:set shiftwidth=4 softtabstop=4 noexpandtab: */

@@ -27,46 +27,47 @@
 #ifndef WP6PREFIXINDICE_H
 #define WP6PREFIXINDICE_H
 
-#include <librevenge-stream/librevenge-stream.h>
+#include <libwpd-stream/libwpd-stream.h>
+#include "libwpd_types.h"
 
 class WPXEncryption;
 
 class WP6PrefixIndice
 {
 public:
-	WP6PrefixIndice(librevenge::RVNGInputStream *input, WPXEncryption *encryption, int id);
+	WP6PrefixIndice(WPXInputStream *input, WPXEncryption *encryption, int id);
 	int getID() const
 	{
 		return m_id;
 	}
-	unsigned char getType() const
+	uint8_t getType() const
 	{
 		return m_type;
 	}
-	unsigned char getFlags() const
+	uint8_t getFlags() const
 	{
 		return m_flags;
 	}
-	unsigned getDataSize() const
+	uint32_t getDataSize() const
 	{
 		return m_dataSize;
 	}
-	unsigned getDataOffset() const
+	uint32_t getDataOffset() const
 	{
 		return m_dataOffset;
 	}
 
 protected:
-	void _read(librevenge::RVNGInputStream *input, WPXEncryption *encryption);
+	void _read(WPXInputStream *input, WPXEncryption *encryption);
 
 private:
 	int m_id;
-	unsigned char m_type;
-	unsigned char m_flags;
-	unsigned short m_useCount;
-	unsigned short m_hideCount;
-	unsigned m_dataSize;
-	unsigned m_dataOffset;
+	uint8_t m_type;
+	uint8_t m_flags;
+	uint16_t m_useCount;
+	uint16_t m_hideCount;
+	uint32_t m_dataSize;
+	uint32_t m_dataOffset;
 
 	bool m_hasChildren;
 };
