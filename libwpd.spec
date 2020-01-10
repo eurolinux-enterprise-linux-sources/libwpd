@@ -3,7 +3,7 @@
 Name: libwpd
 Summary: A library for import of WordPerfect documents
 Version: 0.10.0
-Release: 1%{?dist}
+Release: 2%{?dist}
 Source: http://downloads.sourceforge.net/%{name}/%{name}-%{version}.tar.xz
 URL: http://libwpd.sf.net/
 License: LGPLv2+ or MPLv2.0
@@ -12,6 +12,8 @@ BuildRequires: doxygen
 BuildRequires: help2man
 BuildRequires: pkgconfig(librevenge-0.0)
 BuildRequires: pkgconfig(zlib)
+
+Patch0: 0001-Resolves-rhbz-1643752-bounds-check-m_currentTable-ac.patch
 
 %description
 %{name} is a library for import of WordPerfect documents.
@@ -40,6 +42,7 @@ The %{name}-doc package contains API documentation for %{name}.
 
 %prep
 %setup -q
+%patch0 -p1 -b .CVE-2018-19208
 
 chmod -x docs/%{name}.dia
 
@@ -92,6 +95,9 @@ install -m 0644 wpd2*.1 %{buildroot}/%{_mandir}/man1
 %doc docs/%{name}.png
 
 %changelog
+* Fri Nov 16 2018 Caolán McNamara <caolanm@redhat.com> - 0.10.0-2
+- Resolves: rhbz#1650535 CVE-2018-19208
+
 * Fri Apr 17 2015 David Tardon <dtardon@redhat.com> - 0.10.0-1
 - Resolves: rhbz#1207766 rebase to 0.10.0
 
