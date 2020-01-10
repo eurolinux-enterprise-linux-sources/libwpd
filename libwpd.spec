@@ -4,7 +4,7 @@
 Name: libwpd
 Summary: Library for reading and converting WordPerfect documents
 Version: 0.9.9
-Release: 1%{?dist}
+Release: 3%{?dist}
 Source: http://downloads.sourceforge.net/%{name}/%{name}-%{version}.tar.xz
 Group: System Environment/Libraries
 URL: http://libwpd.sf.net/
@@ -91,6 +91,12 @@ LD_LIBRARY_PATH=../lib/.libs make check
 %doc docs/%{name}.png
 
 %changelog
+* Fri Jan 24 2014 Daniel Mach <dmach@redhat.com> - 0.9.9-3
+- Mass rebuild 2014-01-24
+
+* Fri Dec 27 2013 Daniel Mach <dmach@redhat.com> - 0.9.9-2
+- Mass rebuild 2013-12-27
+
 * Mon Aug 19 2013 David Tardon <dtardon@redhat.com> - 0.9.9-1
 - new release
 
